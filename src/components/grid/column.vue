@@ -1,5 +1,13 @@
 <template>
-    <div :class="{'sub_body_column' : column instanceof Array,start_element : !(column instanceof Array)}" v-if="showChildren(group)">
+
+  <fragment>
+
+    <div :class="{
+            'sub_body_column' : column instanceof Array,
+            start_element : !(column instanceof Array)
+         }"
+         v-if="showChildren(group)">
+
       <template  v-if="column instanceof Array">
 
         <template v-if="header[group].show && header[group].group">
@@ -28,10 +36,15 @@
         </template>
 
       </template>
+
       <template v-else>
         <div :class="['sticky']" v-if="header[group].show" v-html="column"></div>
       </template>
+
     </div>
+
+  </fragment>
+
 </template>
 <script>
 export default{
