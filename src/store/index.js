@@ -7,45 +7,120 @@ export default new Vuex.Store({
   state: {
     grid : {
       setting : {
-        minWidth : 70
+        minWidth : 70,
+        maxWidth : 0,
+        headerWidth : '',
+        columnWidth : {},
       }
     },
   },
   mutations: {
-    setGrid : function(s,grid){
+    normalizeSetting : function(s,grid){
+      s.grid.setting = {
+        ...s.grid.setting,
+        ...grid.setting
+      }
+    },
+    normalizeHeader : function(s, grid){
       const headerElement = {
         name : 'defaultName',
         width : 70,
         child : []
       };
-      s.grid.setting = {
-        ...s.grid.setting,
-        ...grid.setting
-      }
-
-      let headerResult = {},
-          headerWidth = s.grid.setting.minWidth + 'px ',
-          includeHeader = Object.keys(grid.header);
-
+      let headerResult = {};
       for(let key in grid.header){
         headerResult[key] = {
           ...headerElement,
           ...grid.header[key]
         }
-        headerWidth += +headerResult[key].width + 'px ';
-        if(headerResult[key].child.length){
-          includeHeader = includeHeader.filter(x => !grid.header[key].child.includes(x));
-        }
       }
       s.grid.header = headerResult;
-      s.grid.setting.headerWidth = headerWidth;
-      s.grid.setting.includeHeader = includeHeader;
+    },
+    normalizeElement : function(s, grid){
       s.grid.elements = grid.elements;
+    },
+    includeHeader : function(s){
+      let includeHeader = Object.keys(s.grid.header);
+      for(let key in s.grid.header){
+        if(s.grid.header[key].child.length){
+          includeHeader = includeHeader.filter(x => !s.grid.header[key].child.includes(x));
+        }
+      }
+      s.grid.setting.includeHeader = includeHeader;
+    },
+    countWidthHeader : function(s){
+      let headerWidth = s.grid.setting.minWidth + 'px ';
+      let maxWidth = 0;
+      for(let key in s.grid.header){
+        headerWidth += + s.grid.header[key].width + 'px ';
+        maxWidth += +s.grid.header[key].width;
+      }
+      s.grid.setting.headerWidth = headerWidth;
+      s.grid.setting.maxWidth = maxWidth;
+    },
+    countWidthColumn : function(s){
+      function getChildWidth(s,key){
+        let w = 0;
+        s.grid.header[key].child.forEach(el => {
+          if(s.grid.header[el].child.length)
+            w +=  +s.grid.header[el].width + getChildWidth(s,el);
+          else
+            w += s.grid.header[el].width;
+        });
+        return w;
+      }
 
-      console.log(headerWidth)
-    }
+      function getWidthSubColumn(s,key){
+        let str = s.grid.header[key].width + 'px ';
+        s.grid.header[key].child.forEach(el => {
+          if (s.grid.header[el].child.length)
+            str += +s.grid.header[el].width + getChildWidth(s,el) + 'px ';
+          else
+            str += s.grid.header[el].width + 'px ';
+        })
+        return str;
+      }
+
+      let str = s.grid.setting.minWidth + 'px ';
+      for(let key in s.grid.header){
+        if(s.grid.setting.includeHeader.includes(key)) {
+          if (s.grid.header[key].child.length)
+            str += +s.grid.header[key].width + getChildWidth(s,key) + 'px ';
+          else
+            str += s.grid.header[key].width + 'px ';
+        }
+      }
+      s.grid.setting.columnWidth = {
+        row : str
+      };
+
+      for(let key in s.grid.header){
+        if (s.grid.header[key].child.length) {
+          s.grid.setting.columnWidth[key] = getWidthSubColumn(s,key);
+        }
+      }
+    },
+    setColumnWidth : function(s,data){
+      s.grid.header[data.key].width = data.width;
+    },
   },
   actions: {
+    setGrid : async function({commit},grid){
+      await commit('normalizeSetting',grid);
+      await commit('normalizeHeader',grid);
+      await commit('normalizeElement',grid);
+      await commit('includeHeader');
+      await commit('countWidthHeader');
+      await commit('countWidthColumn');
+    },
+    setColumnWidth : async function({commit},data){
+      await commit('countWidthColumn');
+    },
+    resize : async function({commit},data){
+      await commit('setColumnWidth',data);
+      await commit('countWidthHeader');
+    }
+
   },
   getters : {
     grid : s => s.grid,
