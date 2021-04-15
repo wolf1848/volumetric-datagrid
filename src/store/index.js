@@ -25,6 +25,8 @@ export default new Vuex.Store({
       const headerElement = {
         name : 'defaultName',
         width : 70,
+        sort : 100,
+        show : true,
         child : []
       };
       let headerResult = {};
@@ -47,6 +49,30 @@ export default new Vuex.Store({
         }
       }
       s.grid.setting.includeHeader = includeHeader;
+    },
+    sortableHeader : function(s){
+      function getSort(s,key){
+        let arr = [];
+        s.grid.header[key].child.forEach(el => {
+          let child = s.grid.header[el], elements = [];
+          if(child.child.length){
+            elements = getSort(s,el);
+          }
+          arr.push({sort : child.sort, name : child.name, key : el, elements : elements})
+        })
+        return arr.sort(function(a,b){return a.sort - b.sort});
+      }
+      let sortable = [];
+      s.grid.setting.includeHeader.forEach(key => {
+        let el = s.grid.header[key], elements = [];
+        if(el.child.length)
+          elements = getSort(s,key);
+
+        sortable.push({sort : el.sort, name : el.name, key : key, elements : elements});
+      })
+      sortable = sortable.sort(function(a,b){return a.sort - b.sort});
+
+      s.grid.setting.sortableHeader = sortable;
     },
     countWidthHeader : function(s){
       let headerWidth = s.grid.setting.minWidth + 'px ';
@@ -110,6 +136,7 @@ export default new Vuex.Store({
       await commit('normalizeHeader',grid);
       await commit('normalizeElement',grid);
       await commit('includeHeader');
+      await commit('sortableHeader');
       await commit('countWidthHeader');
       await commit('countWidthColumn');
     },
@@ -126,5 +153,8 @@ export default new Vuex.Store({
     grid : s => s.grid,
     gridHeader : s => s.grid.header,
     gridSetting : s => s.grid.setting,
+    columnWidth : s => s.grid.setting.columnWidth,
+    includeHeader : s => s.grid.setting.includeHeader,
+    sortableHeader : s => s.grid.setting.sortableHeader,
   }
 })

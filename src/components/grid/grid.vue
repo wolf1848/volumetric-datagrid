@@ -1,542 +1,284 @@
 <template>
-  <sui-grid padded>
-    <sui-grid-row>
-      <sui-grid-column>
-
-        <div class="scroll_wrapper" @scroll="scrollUpdate">
-          <div class="header_table" :style="'grid-template-columns :' +  dataGrid.setting.headerWidth">
-
-            <div v-if="dataGrid.setting.contextMenu">
-              <sui-icon name="cog" @click="showSortColumn = !showSortColumn"/>
-            </div>
-
-            <template v-for="(col,key) in dataGrid.header">
-              <div v-if="col.show"
-                   :key="'h_'+key"
-                   :class="[{'sortable' : col.sort}]"
-                   @click="setSort(key)"
-              >
-                {{col.text}}
-                <i v-if="col.sort"
-                   :class="[
-                       'icon caret',
-                       {up : setting_sort.direction == 'asc'},
-                       {down : setting_sort.direction == 'desc'},
-                       {show : key == setting_sort.key}
-                   ]"
-                />
-              </div>
-            </template>
-
+  <fragment>
+    <div class="wrapper">
+      <!-- HEADER  -->
+      <div class="header-wrapper">
+        <div class="row-header" ref="rowHeader">
+          <div class="column-header">
+            <div class="column-header-handle column-header-handle-mr"></div>
+            <svg @click="dialogVisible = true" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path fill="currentColor" d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path>
+            </svg>
           </div>
+          <VueDraggableResizable
+              class-name="column-header"
+              class-name-handle="column-header-handle"
+              v-for="(item,key) in grid.header"
+              :key="key"
+              :draggable="false"
+              :w="item.width"
+              :h="'auto'"
+              :minWidth="grid.setting.minWidth"
+              @resizing="onResize"
+              @resizestop="onResizeStop"
+              :handles="['mr']"
+              :active="true"
+              :prevent-deactivation="true"
+              v-on:mousedown.native.capture="activeResizeKey = key"
+              v-on:mouseup.native.capture="activeResizeKey = null"
+          >
+            <span>{{item.name}}</span>
+          </VueDraggableResizable>
         </div>
+      </div>
+
+      <VueCustomScrollbar class="scroll-area" :settings="{suppressScrollY : true}" @ps-scroll-x="scrollHandle">
+        <div :style="[{width : grid.setting.maxWidth + 'px'},{height : '15px'}]"></div>
+      </VueCustomScrollbar>
+
+      <div class="body-wrapper" ref="bodyWrapper">
+        <template v-for="(i) in 30">
+          <template v-for="(row,key) in grid.elements">
+            <Row :row="row" :key="'row_' + key + '_' +  i" />
+          </template>
+        </template>
+      </div>
+
+    </div>
 
 
 
-<!--        <div class="scroll_wrapper clone_element" @scroll="scrollUpdate">
-          <div class="header_table" :style="'grid-template-columns :' +  gtc">
-            <div v-if="setting.setting.contextMenu"><sui-icon name="cog" @click="showSortColumn = !showSortColumn"/></div>
-            <template v-for="item in headerMapKey">
-              <div v-if="setting.header[item].show" :key="item+'_header'" :class="[{'sortable' : setting.header[item].sort}]" @click="setSort(item)">
-                {{setting.header[item].text}}
-                <i :class="['icon caret',{up : setting_sort.direction == 'asc'},{down : setting_sort.direction == 'desc'}, {show : item == setting_sort.key}]" v-if="setting.header[item].sort" />
-                <sui-icon name="filter" :class="'filtered'" v-if="setting.header[item].filter" />
+    <el-dialog title="Настройка списка" :visible.sync="dialogVisible" width="30%" >
+        <div class="sort-grid-body">
+          <VueDraggableSortable v-model="grid.setting.sortableHeader" v-bind="{animation: 200}">
+            <transition-group type="transition">
+              <div v-for="element in grid.setting.sortableHeader" :key="element.key">
+                <div class="sort-grid-item">
+                  <input type="checkbox" class="sort-grid-checkbox" checked="">
+                  <label class="sort-grid-label">{{element.name}}</label>
+                </div>
+                <VueDraggableSortable v-model="element.elements" class="drag-wrapper-child">
+                  <div v-for="el in element.elements" :key="el.key">
+                    <div class="sort-grid-item">
+                      <input type="checkbox" class="sort-grid-checkbox" checked="">
+                      <label class="sort-grid-label">{{el.name}}</label>
+                    </div>
+                  </div>
+                </VueDraggableSortable>
               </div>
-            </template>
-          </div>
-        </div>-->
-
-        <div class="scroll_wrapper_hidden" :ref="'body_table'">
-          <div class="body_table" :style="{'grid-template-columns' : dataGrid.setting.columnrWidth}" v-for="(column,row_cnt) in dataGrid.column">
-            <div v-if="dataGrid.setting.contextMenu" class="start_element">
-              <div :class="['sticky']">
-                <i class="icon bars" @click="mainContext($event,row_cnt)"/>
-              </div>
-            </div>
-            <template v-for="key in dataGrid.setting.headerFistLevel">
-              <Column :column="column[key]" :group="key" :header="dataGrid.header" :key="key+'_'+row_cnt" :row_cnt="row_cnt"/>
-            </template>
-          </div>
+            </transition-group>
+          </VueDraggableSortable>
         </div>
+    </el-dialog>
 
-
-
-
-<!--        <div v-if="setting.setting.contextMenu" v-show="setting_context.show" :ref="'contextMenu'">
-          <div :class="['ui left pointing dropdown link item active']">
-            <div :class="['menu transition',{visible : setting_context.show},{hidden : !setting_context.show}]">
-
-              <div class="item"
-                   v-for="item in setting.setting.contextElement"
-                   v-show="showContextElement(item.show)"
-                   @click="clickContext(item.action)"
-                   v-html="item.name"
-              ></div>
-
-            </div>
-          </div>
-        </div>-->
-
-
-      </sui-grid-column>
-    </sui-grid-row>
-<!--    <sui-modal size="mini" v-model="showSortColumn" closeIcon>
-      <sui-modal-header>
-        Настройка списка
-      </sui-modal-header>
-      <sui-modal-content>
-        <draggable v-model="mapKey" :class="'sortable_wrapper'">
-          <transition-group :class="'sortable_group'">
-            <span class="sortable_element" v-for="(element,key) in mapKey" :key="key+'_sortable'">
-              <span class="sortable_content">
-                <span class="checkbox"><sui-checkbox v-model="setting.header[element].show" /></span>
-                <span class="name_column">{{setting.header[element].text}}</span>
-                <template v-if="setting.header[element].group">
-                  <sui-icon @click="toggleShowSortableColumn(element)" name="plus" v-if="hideGroupSortable.indexOf(element) < 0"/>
-                  <sui-icon @click="toggleShowSortableColumn(element)" name="minus" v-else/>
-                </template>
-              </span>
-              <sortableGroup v-if="setting.header[element].group && hideGroupSortable.indexOf(element) >= 0"
-                             v-on:toggleShowSortableColumn="toggleShowSortableColumn($event)"
-                            :hideGroupSortable="hideGroupSortable" :parent="element" :key="element +'_' + key + '_group_sort'" :header="setting.header" :element="setting.header[element].group" />
-            </span>
-          </transition-group>
-        </draggable>
-      </sui-modal-content>
-    </sui-modal>-->
-  </sui-grid>
+  </fragment>
 </template>
 <script>
+import VueDraggableSortable from 'vuedraggable'
+import VueDraggableResizable from 'vue-draggable-resizable'
+import VueCustomScrollbar from 'vue-custom-scrollbar'
+import "vue-custom-scrollbar/dist/vueScrollbar.css"
+import Row from './row'
 
-const defaultHeaderColumn = {
-  text : '',
-  width : '150',
-  group : false,
-  sort : false,
-  show : true
-};
-
-import Column from './column'
-import draggable from 'vuedraggable'
-import sortableGroup from './sortablegroup'
 export default {
   name : 'Grid',
-  components : { Column , draggable, sortableGroup},
-  props : ['data','row'],
+  props : ['data'],
+  components : {VueDraggableResizable, VueDraggableSortable, VueCustomScrollbar, Row},
   computed : {
-    dataGrid : function(){
-      let localData = {
-        setting : {
-          ...this.data.setting
-        },
-        header : {},
-        filter : {},
-        column : this.data.column,
-      };
-
-      //Нормализация объекта header
-      let DefaultHeaderRow = {};
-
-      for(let key in this.data.header){
-        let el = this.data.header[key];
-        DefaultHeaderRow[key] = {
-          ...defaultHeaderColumn,
-          ...el
-        };
-      }
-
-      localData.header = DefaultHeaderRow;
-
-      //Верхний уровень вложенности колонок
-      let headerFistLevel = Object.keys(localData.header);
-      for(let key in localData.header){
-        if(localData.header[key].group){
-          headerFistLevel = headerFistLevel.filter(x => !localData.header[key].group.includes(x));
-        }
-      }
-
-      localData.setting.headerFistLevel = headerFistLevel;
-
-      //Расчет ширины для header
-      let headerWidth = localData.setting.contextMenu ? '40px ' : '';
-      Object.keys(localData.header).forEach(el => {
-        if(localData.header[el].show) {
-          headerWidth += localData.header[el].width + 'px ';
-        }
-      });
-
-      localData.setting.headerWidth = headerWidth;
-
-      //Расчет ширины для колонок
-      function generateWidth(header, key){
-        let value = 0;
-        header[key].group.forEach(el => {
-          if(header[el].show)
-            value += +header[el].width;
-
-          if(header[el].group){
-            value += +generateWidth(header,el)
-          }
-        });
-        return value;
-      }
-
-      let columnWidth = localData.setting.contextMenu ? '40px ' : '';
-
-      localData.setting.headerFistLevel.forEach(el => {
-        let column = localData.header[el];
-          if (column.group) {
-            let val = column.show ? +column.width : 0;
-            val += +generateWidth(localData.header,el);
-            if(val > 0)
-              columnWidth += +val + 'px ';
-          } else {
-            if(column.show)
-              columnWidth += +column.width + 'px ';
-          }
-      });
-
-      localData.setting.columnrWidth = columnWidth;
-
-
-
-      for(let rowKey in this.row.column){
-        for(let columnKey in this.row.column[rowKey]) {
-          if(typeof this.row.column[rowKey][columnKey] == 'boolean'){
-            this.row.column[rowKey][columnKey] = this.row.column[rowKey][columnKey] ? 'Да' : 'Нет';
-          }
-        }
-      }
-
-      for(let i = this.row.setting.contextElement.length;i--;){
-        if(!('show' in this.row.setting.contextElement[i])){
-          this.row.setting.contextElement[i].show = function(){
-            return true;
-          }
-        }
-      }
-
-      return localData;
+    grid : function(){
+      return this.$store.getters.grid;
     },
   },
   data : function(){
     return {
-      showSortColumn : false,
-      setting_context : {
-        show : false,
-        type : null,
-        element : null,
-      },
-      setting_sort : {
-        key : null,
-        direction : 'asc'
-      },
-      hideGroupSortable : []
+      offsetScrollX : 0,
+      activeResizeKey : null,
+      dialogVisible : false
     };
   },
-  methods : {
-    toggleShowSortableColumn : function(key){
-      let index = this.hideGroupSortable.indexOf(key);
-      if(index === -1)
-        this.hideGroupSortable.push(key);
-      else
-        this.hideGroupSortable.splice(index,1);
-
-      console.log(key,this.hideGroupSortable);
-    },
-    getSubData : function(){
-
-    },
-    scrollUpdate : function(e){
-      this.$refs['body_table'].style.clipPath = 'inset(0 '+(-e.target.scrollLeft)+'px 0 '+e.target.scrollLeft+'px)';
-      this.$refs['body_table'].style.left = -e.target.scrollLeft + 'px';
-    },
-    mainContext : function(e,row){
-      let vector = e.currentTarget.getBoundingClientRect(),
-          element = this.$refs['contextMenu'],
-          self = this;
-
-      document.body.addEventListener("mousedown", self.closeContextMenu);
-      element.style.top = vector.y - this.setting.setting.contextMenuHeight + pageYOffset + 'px';
-      element.style.left = vector.right + 'px';
-      element.style.position = 'absolute';
-      this.setting_context.element = row;
-      this.setting_context.show = true;
-    },
-    closeContextMenu : function(e){
-      if(this.$refs['contextMenu'].contains(e.target)) {
-        return false;
-      }else{
-        this.setting_context.show = false;
-        document.body.removeEventListener("mousedown", this.closeContextMenu);
-      }
-    },
-    getGroupWidth : function(key){
-      let value = 0;
-      this.data.header[key].group.forEach(el => {
-        if(this.data.header[el].show)
-          value += +this.data.header[el].width;
-
-        if(this.data.header[el].show && this.data.header[el].filter)
-          value += +50;
-
-        if(this.data.header[el].group){
-          value += +this.getGroupWidth(el)
-        }
-      });
-      return value;
-    },
-    showContextElement : function(action){
-      return action.call(this,this.setting.column[this.setting_context.element]);
-    },
-    clickContext : function(action){
-      action.call(this,this.setting.column[this.setting_context.element]);
-      this.setting_context.show = false;
-      document.body.removeEventListener("mousedown", this.closeContextMenu);
-    },
-    setSort : function(key){
-      if(this.setting.header[key].sort) {
-        if (this.setting_sort.key == key) {
-          this.setting_sort.direction = this.setting_sort.direction == 'asc' ? 'desc' : 'asc';
-        } else {
-          this.setting_sort.key = key;
-          this.setting_sort.direction = 'asc';
-        }
-      }
-    },
-    getGroupKey : function(key,element){
-      if(element.indexOf(key) === -1)
-        element.push(key);
-      if(this.data.header[key].group){
-        this.data.header[key].group.forEach(el => {
-          if(element.indexOf(key) === -1)
-            element.push(key);
-            element = this.getGroupKey(el,element);
-        });
-      }
-      return element;
-    }
+  created : async function(){
+    await this.$store.dispatch('setGrid',this.data);
+    this.$refs.rowHeader.style.gridTemplateColumns = this.grid.setting.headerWidth;
   },
-  created() {
-      console.log(this.headerMapKey,'headerMapKey');
+  methods : {
+    onResize: function (x,y,w,h) {
+      this.$store.dispatch('resize',{key : this.activeResizeKey,width : w});
+      this.$refs.rowHeader.style.gridTemplateColumns = this.grid.setting.headerWidth;
+    },
+    onResizeStop: function (x,y,w,h) {
+      this.$store.dispatch('setColumnWidth',{key : this.activeResizeKey,width : w});
+    },
+    scrollHandle(e) {
+      let left = e.target.scrollLeft;
+      this.$refs.rowHeader.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
+      this.$refs.rowHeader.style.left = -left + 'px';
+      this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
+      this.$refs.bodyWrapper.style.left = -left + 'px';
+    },
   },
 }
 </script>
-
 <style>
-.sticky_field.show > .body_table_sticky > div{
-  background: transparent;
+/* HEADER */
+.wrapper {
+  padding: 20px;
 }
-.sticky_field.show > .body_table_sticky > div.sticky{
-  background: #fff;
-}
-.scroll_wrapper{
-  position: sticky !important;
-  z-index: 1;
-  top: 0;
-  margin-top: 0px;
-  overflow: auto;
-}
-.scroll_wrapper_hidden{
-  clip-path: inset(0);
-  position: relative;
-  left: 0;
-}
-.scroll_wrapper_hidden > *{
-  min-width: 0 !important;
-}
-.header_table{
-  display: grid;
-  grid-gap: 0vw;
-}
-.header_table *{
-  cursor: context-menu;
-  user-select: none;
-}
-.header_table > div{
-  background: #eee;
-  color: #000;
-  padding: 10px;
-  text-align: center;
-  border-right: 1px solid #000;
-  font-weight: bold;
-  position: relative;
-}
-.header_table > div.sortable{
-  cursor: pointer;
-}
-.header_table > div.sortable > i.caret{
-  display: none;
-}
-.header_table > div.sortable:hover > i.caret,
-.header_table > div.sortable > i.caret.show{
-  display: inline-block;
-}
-.header_table i.filtered {
-  position: absolute;
-  font-size: 10px;
-  width: 25px;
-  right: 0;
-  margin: 0;
-  display: grid;
-  align-items: center;
-  cursor: pointer;
-  box-sizing: border-box;
-  height: 100%;
-  top: 0;
-  padding-top: 3px;
-}
-.header_table i.cog {
-  cursor: pointer;
-}
-.header_table > div:last-child{
-  border-right: 0;
-}
-.body_table{
-  display: grid;
-  grid-gap: 0vw;
-}
-.body_table i {
-  cursor: pointer;
-}
-.body_table:last-child{
-  border-bottom: 0;
-}
-.body_table > div.start_element{
-  padding: 10px;
-  text-align: center;
-}
-.body_table > div{
-  border-right: 1px solid #000;
-}
-.body_table > div:not(.sub_body_column){
-  border-bottom: 1px solid #000;
-}
-.body_table:last-child > div{
-  border-bottom: 0;
-}
-.body_table > div:last-child{
-  border-right: 0;
-}
-.sub_body_row > div:not(.sub_body_column){
-  padding: 10px;
-  text-align: center;
-}
-.sub_body_column > .sub_body_row > div:not(.sub_body_column){
-  height: fit-content;
-}
-.body_table > .sub_body_column{
-  border-left: 0;
-}
-.sub_body_column{
-  display: grid;
-  border-bottom: 1px solid #000;
-  box-sizing: border-box;
-  border-left: 1px solid #000;
-}
-.sub_body_column div{
-  border-bottom: 0;
-}
-.sub_body_column .sub_body_row{
-  border-bottom: 1px solid #000;
-/*  height: 100%;*/
-}
-.sub_body_row .sub_body_column:first-child{
-  border-left: 0;
-}
-.sub_body_column .sub_body_row:last-child{
-  border-bottom: 0;
-}
-.sub_body_column .sub_body_row .value_element{
-  border-bottom: 1px solid #000;
-}
-.sub_body_column .sub_body_row .value_element:last-child{
-  border-bottom: 0;
-}
-.sub_body_row{
-  /*border-left: 1px solid #000;*/
-}
-.body_table > .sub_body_column > .sub_body_row{
-  border-left: 0;
-}
-.sticky{
+.header-wrapper {
   position: sticky;
-  top : 49px;
+  top: 0;
+  z-index: 1;
 }
-.sortable_element{
-  display: block;
-}
-.ui.modal > .content > .sortable_wrapper > .sortable_group > .sortable_element{
-  cursor: pointer;
-  display: inline-block;
-  min-height: 1em;
-  outline: 0;
-  border: none;
-  vertical-align: baseline;
-  font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
-  padding: 0;/*.78571429em 1.5em .78571429em;*/
-  line-height: 1em;
-  font-style: normal;
-  text-align: center;
-  text-decoration: none;
-  user-select: none;
-  background: transparent none!important;
-  color: rgba(0,0,0,.6)!important;
-  font-weight: 400;
-  border-radius: .28571429rem;
-  text-transform: none;
-  text-shadow: none!important;
-  box-shadow: 0 0 0 1px rgba(34,36,38,.15) inset;
-  width: 100%;
-  text-align: left;
-  margin-bottom: 10px;
-}
-.ui.modal > .content > .sortable_wrapper > .sortable_group > .sortable_element:last-child{
-  margin-bottom: 0;
-}
-.sortable_element > .sortable_wrapper{
-  border-top: 1px solid rgba(34,36,38,.15);
-}
-.sortable_group{
-  display: block;
-}
-.sortable_element > .sortable_wrapper > .sortable_group{
-  margin-left: 10px;
-  border-left: 1px solid rgba(34,36,38,.15);
-}
-.sortable_element > .sortable_wrapper > .sortable_group > .sortable_element{
-  border-bottom: 1px solid rgba(34,36,38,.15);
-}
-.sortable_element > .sortable_wrapper > .sortable_group > .sortable_element:last-child{
-  border-bottom: 0;
-}
-.sortable_element .sortable_content{
+.row-header{
+  border-bottom: 2px #eef2f4 solid;
+  background: #fff;
   display: grid;
-  padding: .78571429em;
-  grid-template-columns: 55px 1fr 30px;
+  grid-gap: 0vw;
+  z-index: 1;
 }
-.sortable_element .name_column{
-  font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  color: rgba(0, 0, 0, 0.87);
-  margin-left: 10px;
+.body-wrapper,
+.row-header {
+  position: relative;
+  left : 0;
+  clip-path: inset(0);
+}
+.column-header,
+.column-body{
   display: flex;
-  align-self: center;
+  max-width: 100%;
+  justify-content: center;
+  padding: 10px 30px 10px 10px;
+  position: relative;
 }
-.sortable_content i,
-.sortable_content .checkbox{
-  display: grid !important;
-  margin: auto !important;
+.column-header{
+  align-items: center;
 }
-.sortable_element .children_column{
+.column-header span{
+  overflow: hidden;
+  display: inline-block;
+  color: #535c69;
+  text-align: left;
+  text-transform: uppercase;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: .5px;
+  font-weight: normal;
+  font-size: 11px;
+  font-family: 'OpenSans-Semibold',"Helvetica Neue",Arial,Helvetica,sans-serif;
+  line-height: 12px;
+}
+.column-header-handle{
+  width: 20px;
+  height: 100%;
+  position: absolute;
+  left: calc(100% - 20px);
+}
+.column-header-handle-mr:before{
+  position: absolute;
+  top: 15%;
+  right: 10px;
   display: block;
-  padding-left: 10px;
-  padding-top: 5px;
+  width: 1px;
+  height: 70%;
+  background: rgba(0,0,0,.1);
+  content: '';
 }
-.sortable_element.sortable-chosen.sortable-ghost *{
-  background : #2185D0 !important;
+.column-header-handle-mr:hover{
+  cursor: col-resize;
 }
-.sortable_element.sortable-chosen.sortable-ghost *{
-  color : #FFF !important;
+.column-header:first-child .column-header-handle-mr:hover{
+  cursor: auto;
+}
+.column-header svg{
+  width: 15px;
+  cursor: pointer;
+}
+/* SCROLL */
+.scroll-area{
+  position: sticky;
+  margin: auto;
+  width: 100%;
+  height: 15px;
+  top : 37px;
+  z-index: 1;
+}
+.ps__rail-x {
+  opacity: .6;
+}
+.ps__thumb-x{
+  top : 2px;
+}
+
+/* BODY */
+.body-wrapper > .row-body{
+  border-bottom: 2px #eef2f4 solid;
+}
+.row-body{
+  display: grid;
+  grid-gap: 0vw;
+}
+.column-body{
+  align-items: start;
+}
+.column-body svg{
+  width: 14px;
+}
+.column-body span{
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  position: sticky;
+  display: block;
+  color: #535c69;
+  font-size: 13px;
+  top: 62px;
+}
+
+/* SORTABLE */
+.el-dialog__body,
+.el-dialog__header{
+  padding: 10px !important;
+}
+.sort-grid-item {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 100%;
+  border-bottom: 1px #fff solid;
+  border-radius: 2px;
+  color: #525c69;
+  font: 14px/33px "Helvetica Neue",Arial,Helvetica,sans-serif;
+  cursor: pointer;
+  -webkit-column-break-inside: avoid;
+  background: #b3eafc;
+}
+.sort-grid-label {
+  display: block;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 6px 20px 6px 28px;
+  min-height: 33px;
+  width: auto;
+  height: auto;
+  outline: 0;
+  border: 1px transparent solid;
+  vertical-align: middle;
+  line-height: 19px;
+  cursor: pointer;
+  -webkit-transition: border 200ms;
+  -o-transition: border 200ms;
+  transition: border 200ms;
+  border-radius: 2px;
+}
+.sort-grid-checkbox {
+  position: absolute;
+  top: 10px;
+  margin: 0 7px;
+  vertical-align: middle;
+}
+.drag-wrapper-child{
+  padding-left: 20px;
 }
 </style>
