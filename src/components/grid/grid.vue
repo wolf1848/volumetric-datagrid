@@ -10,84 +10,75 @@
               <path fill="currentColor" d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path>
             </svg>
           </div>
+
           <VueDraggableResizable
               class-name="column-header"
               class-name-handle="column-header-handle"
-              v-for="(item,key) in grid.header"
-              :key="key"
+              v-for="(item,key) in keyHeader"
+              :key="item"
               :draggable="false"
-              :w="item.width"
+              :w="header[item].width"
               :h="'auto'"
-              :minWidth="grid.setting.minWidth"
+              :minWidth="setting.minWidth"
               @resizing="onResize"
               @resizestop="onResizeStop"
               :handles="['mr']"
               :active="true"
               :prevent-deactivation="true"
-              v-on:mousedown.native.capture="activeResizeKey = key"
+              v-on:mousedown.native.capture="activeResizeKey = item"
               v-on:mouseup.native.capture="activeResizeKey = null"
           >
-            <span>{{item.name}}</span>
+            <span>{{header[item].name}}</span>
           </VueDraggableResizable>
         </div>
       </div>
 
-      <VueCustomScrollbar class="scroll-area" :settings="{suppressScrollY : true}" @ps-scroll-x="scrollHandle">
-        <div :style="[{width : grid.setting.maxWidth + 'px'},{height : '15px'}]"></div>
+     <VueCustomScrollbar class="scroll-area" :settings="{suppressScrollY : true}" @ps-scroll-x="scrollHandle">
+        <div :style="[{width : setting.maxWidth + 'px'},{height : '15px'}]"></div>
       </VueCustomScrollbar>
 
-      <div class="body-wrapper" ref="bodyWrapper">
-        <template v-for="(i) in 30">
-          <template v-for="(row,key) in grid.elements">
-            <Row :row="row" :key="'row_' + key + '_' +  i" />
+     <div class="body-wrapper" ref="bodyWrapper">
+<!--        <template v-for="(i) in 30">-->
+          <template v-for="(row,key) in elements">
+            <Row :grid="name" :row="row" :key="'row_' + key + '_' +  1" />
           </template>
-        </template>
+<!--        </template>-->
       </div>
 
     </div>
 
-
-
-    <el-dialog title="Настройка списка" :visible.sync="dialogVisible" width="30%" >
-        <div class="sort-grid-body">
-          <VueDraggableSortable v-model="grid.setting.sortableHeader" v-bind="{animation: 200}">
-            <transition-group type="transition">
-              <div v-for="element in grid.setting.sortableHeader" :key="element.key">
-                <div class="sort-grid-item">
-                  <input type="checkbox" class="sort-grid-checkbox" checked="">
-                  <label class="sort-grid-label">{{element.name}}</label>
-                </div>
-                <VueDraggableSortable v-model="element.elements" class="drag-wrapper-child">
-                  <div v-for="el in element.elements" :key="el.key">
-                    <div class="sort-grid-item">
-                      <input type="checkbox" class="sort-grid-checkbox" checked="">
-                      <label class="sort-grid-label">{{el.name}}</label>
-                    </div>
-                  </div>
-                </VueDraggableSortable>
-              </div>
-            </transition-group>
-          </VueDraggableSortable>
-        </div>
-    </el-dialog>
+<!--    <el-dialog title="Настройка списка" :visible.sync="dialogVisible" width="30%" >
+      <Sortable />
+    </el-dialog>-->
 
   </fragment>
 </template>
 <script>
-import VueDraggableSortable from 'vuedraggable'
+
 import VueDraggableResizable from 'vue-draggable-resizable'
 import VueCustomScrollbar from 'vue-custom-scrollbar'
 import "vue-custom-scrollbar/dist/vueScrollbar.css"
 import Row from './row'
+import Sortable from './sortable'
 
 export default {
   name : 'Grid',
-  props : ['data'],
-  components : {VueDraggableResizable, VueDraggableSortable, VueCustomScrollbar, Row},
+  props : ['name'],
+  components : {VueDraggableResizable, Sortable, VueCustomScrollbar, Row},
   computed : {
-    grid : function(){
-      return this.$store.getters.grid;
+    keyHeader : function(){
+      return this.$store.getters.keyHeader(this.name);
     },
+    header : function(){
+      return this.$store.getters.header(this.name);
+    },
+    setting : function(){
+      return this.$store.getters.setting(this.name);
+    },
+    elements : function(){
+      return this.$store.getters.elements(this.name);
+    },
+
   },
   data : function(){
     return {
@@ -96,24 +87,23 @@ export default {
       dialogVisible : false
     };
   },
-  created : async function(){
-    await this.$store.dispatch('setGrid',this.data);
-    this.$refs.rowHeader.style.gridTemplateColumns = this.grid.setting.headerWidth;
+  mounted : function(){
+    this.$refs.rowHeader.style.gridTemplateColumns = this.setting.headerWidth;
   },
   methods : {
     onResize: function (x,y,w,h) {
-      this.$store.dispatch('resize',{key : this.activeResizeKey,width : w});
-      this.$refs.rowHeader.style.gridTemplateColumns = this.grid.setting.headerWidth;
+      this.$store.dispatch('resize',{key : this.activeResizeKey,width : w, name : this.name});
+      this.$refs.rowHeader.style.gridTemplateColumns = this.setting.headerWidth;
     },
     onResizeStop: function (x,y,w,h) {
-      this.$store.dispatch('setColumnWidth',{key : this.activeResizeKey,width : w});
+      //this.$store.dispatch('setColumnWidth',{key : this.activeResizeKey,width : w, name : this.name});
     },
     scrollHandle(e) {
       let left = e.target.scrollLeft;
       this.$refs.rowHeader.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
       this.$refs.rowHeader.style.left = -left + 'px';
-      this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
-      this.$refs.bodyWrapper.style.left = -left + 'px';
+      // this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
+      // this.$refs.bodyWrapper.style.left = -left + 'px';
     },
   },
 }
@@ -134,6 +124,7 @@ export default {
   display: grid;
   grid-gap: 0vw;
   z-index: 1;
+  overflow: hidden;
 }
 .body-wrapper,
 .row-header {
@@ -151,6 +142,7 @@ export default {
 }
 .column-header{
   align-items: center;
+  box-sizing: border-box;
 }
 .column-header span{
   overflow: hidden;
@@ -234,6 +226,8 @@ export default {
   color: #535c69;
   font-size: 13px;
   top: 62px;
+  vertical-align: top;
+  font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
 }
 
 /* SORTABLE */

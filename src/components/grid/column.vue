@@ -8,7 +8,7 @@
               {{ column.value }}
             </span>
           </div>
-          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" />
+          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" :grid="grid" />
         </div>
         <div class="column-body" v-else>
           <span :key="key">
@@ -25,7 +25,7 @@
                 {{ column.value }}
               </span>
           </div>
-          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" />
+          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" :grid="grid"/>
         </div>
         <div class="column-body" v-else>
             <span :key="key">
@@ -40,12 +40,11 @@
 
 export default {
   name : 'Column',
-  props : ['item','columnKey'],
+  props : ['grid','item','columnKey'],
   computed : {
     rowWidth : function(){
-      return {'grid-template-columns' : this.$store.getters.gridSetting.columnWidth[this.columnKey]};
+      return {'grid-template-columns' : this.$store.getters.setting(this.grid).columnWidth[this.columnKey]};
     },
-
   }
 }
 </script>

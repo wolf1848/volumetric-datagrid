@@ -6,7 +6,7 @@
         </span>
     </div>
 
-    <Column v-for="(item,columnKey) in row" v-if="includeHeader.includes(columnKey)" :item="item" :columnKey="columnKey" :key="columnKey" />
+    <Column v-for="(columnKey,i) in includeHeader" :item="row[columnKey]" :columnKey="columnKey" :key="columnKey" :grid="grid" />
 
   </div>
 </template>
@@ -14,14 +14,14 @@
 import Column from './column'
 export default {
   name : 'Row',
-  props : ['row'],
+  props : ['grid','row'],
   components : {Column},
   computed : {
     includeHeader : function(){
-      return this.$store.getters.gridSetting.includeHeader;
+      return this.$store.getters.keyHeader(this.grid).filter(x => this.$store.getters.includeHeader(this.grid).includes(x));
     },
     rowWidth : function(){
-      return {'grid-template-columns' : this.$store.getters.columnWidth.row}
+      return {'grid-template-columns' :  this.$store.getters.setting(this.grid).columnWidth.row}
     }
   },
 }

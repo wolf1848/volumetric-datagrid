@@ -1,54 +1,18 @@
 <template>
   <div id="app">
-
-    <Grid :data="main_grid" />
-
+    <Grid name="main" />
   </div>
 </template>
 
 <script>
-
-
-
-
-import draggable from 'vuedraggable'
 import Grid from './components/grid/grid'
-
 
 export default {
   name: 'App',
-  components : {Grid,draggable},
+  components : {Grid},
 
   data: function (){
     return {
-      myArray : [
-        {
-          id : 1,
-          name : '1',
-          elements : [
-            {
-              id : 2,
-              name : '2',
-              elements : []
-            },{
-              id : 3,
-              name : '3',
-              elements : []
-            }
-          ]
-        },
-        {
-          id : 4,
-          name : '4',
-          elements : []
-        },
-        {
-          id : 5,
-          name : '5',
-          elements : []
-        }
-      ],
-
       main_grid : {
         setting : {
           headerWidth : '',
@@ -146,6 +110,9 @@ export default {
         ]
       }
     };
+  },
+  created : function(){
+    this.$store.dispatch('createGrid', {name : 'main',data : this.main_grid});
   },
 }
 </script>
