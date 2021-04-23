@@ -4,13 +4,16 @@ import Vuex from 'vuex'
 Vue.use(Vuex);
 
 const defaultGrid = {
+  context : {
+    row : null,
+    menu : []
+  },
   setting : {
     minWidth : 70,
-    maxWidth : 0,
     headerWidth : '',
     columnWidth : {},
   },
-  header : [],
+  header : {},
   elements : []
 };
 export default new Vuex.Store({
@@ -19,7 +22,10 @@ export default new Vuex.Store({
   },
   mutations: {
     createGrid : function(s,name){
-      s.grid[name] = defaultGrid;
+      Vue.set(s.grid, name, defaultGrid);
+    },
+    normalizeContext : function(s,data){
+      s.grid[data.name].context.menu = data.data.context;
     },
     normalizeSetting : function(s,data){
       s.grid[data.name].setting = {
@@ -44,213 +50,163 @@ export default new Vuex.Store({
       }
       s.grid[data.name].header = headerResult;
     },
-    sortableHeader : function(s, name){
-      let sortable = [],
-          includeHeader = Object.keys(s.grid[name].header),
-          getSort = function (header,key){
-            let arr = [];
-            header[key].child.forEach(el => {
-              let child = header[el], elements = [];
-              if(child.child.length){
-                elements = getSort(header,el);
-              }
-              arr.push({...child, child : elements, key : el})
-            })
-            return arr.sort(function(a,b){return a.sort - b.sort});
+    virtualHeader : function(s, name){
+      let tree = {},
+          header = s.grid[name].header,
+          root = Object.keys(header),
+          list = [],
+          listWidth = s.grid[name].setting.minWidth + 'px ',
+          scrollWidth = s.grid[name].setting.minWidth,
+          treeWidth = {
+            root : s.grid[name].setting.minWidth + 'px '
           };
 
-      for(let key in s.grid[name].header){
-        if(s.grid[name].header[key].child.length){
-          includeHeader = includeHeader.filter(x => !s.grid[name].header[key].child.includes(x));
+      for(let key in header){
+        if(header[key].child.length){
+          tree[key] = header[key].child;
+          root = root.filter(x => !header[key].child.includes(x));
         }
       }
 
-      includeHeader.forEach(key => {
-        let el = s.grid[name].header[key],
-            elements = [];
-        if(el.child.length)
-          elements = getSort(s.grid[name].header,key);
+      tree.root = root;
 
-        sortable.push({...el, child : elements, key : key});
-      })
-      sortable = sortable.sort(function(a,b){return a.sort - b.sort});
+      for(let key in tree){
+        tree[key] = tree[key].sort(function(a,b){
+          return header[a].sort - header[b].sort;
+        })
+      }
 
-      s.grid[name].includeHeader = includeHeader;
-      s.grid[name].sortableHeader = sortable;
-    },
-    keyHeader : function(s,name){
-      let sortable = s.grid[name].sortableHeader,
-          keyHeader = [],
-          childKey = function(arr){
-            let res = [];
-            arr.forEach(el => {
-              if(el.child.length){
-                res.push(el.key);
-                res = res.concat(childKey(el.child));
-              }else
-                res.push(el.key);
-            });
-            return res;
-          };
-      sortable.forEach( el => {
-        if(el.child.length){
-          keyHeader.push(el.key);
-          keyHeader = keyHeader.concat(childKey(el.child));
-        }else
-          keyHeader.push(el.key);
+      let sortableTree = {};
+      for(let key in tree){
+        sortableTree[key] = tree[key];
+      }
+
+      let exclude = [];
+      for(let key in header){
+        if(!header[key].show)
+          exclude.push(key);
+      }
+
+      for(let key in tree){
+        tree[key] = tree[key].filter(x => !exclude.includes(x));
+      }
+
+
+      list = (function lists(data){
+        let arr = [];
+        data.forEach(el => {
+          arr.push(el);
+          if(el in tree){
+            arr = arr.concat(lists(tree[el]));
+          }
+        });
+        return arr;
+      })(tree.root);
+
+
+      list.forEach(key => {
+        listWidth += + header[key].width + 'px ';
+        scrollWidth += +header[key].width;
       });
 
-      s.grid[name].keyHeader = keyHeader;
-    },
-    countWidthHeader : function(s,name){
-      let headerWidth = s.grid[name].setting.minWidth + 'px ';
-      let maxWidth = 0;
-      s.grid[name].keyHeader.forEach(key => {
-        headerWidth += + s.grid[name].header[key].width + 'px ';
-        maxWidth += +s.grid[name].header[key].width;
-      })
-      s.grid[name].setting.headerWidth = headerWidth;
-      s.grid[name].setting.maxWidth = maxWidth;
-    },
-    updateWidthHeader : function(s,data){
-      s.grid[data.name].header[data.key].width = data.width;
-    },
-    normalizeElement : function(s, data){
-      s.grid[data.name].elements = data.data.elements;
-    },
-    countWidthColumn : function(s,name){
-      function getChildWidth(grid,key){
+      function subWidth(key,tree,header,root = false, flag = false){
         let w = 0;
-        grid.header[key].child.forEach(el => {
-          if(grid.header[el].child.length)
-            w +=  +grid.header[el].width + getChildWidth(grid,el);
-          else
-            w += grid.header[el].width;
+        if(root){
+          root = !root;
+          tree[key].forEach(el => {
+            if(el in tree)
+              flag = true;
+          });
+        }
+        tree[key].forEach(el => {
+
+          w += +header[el].width;
+
+          if(!root && !flag)
+            w += 'px ';
+
+          if(el in tree)
+            w += +subWidth(el, tree, header,root, flag);
         });
+
+        if(!root && !flag)
+          w = w.toString().slice(0,-3);
+
         return w;
       }
 
-      function getWidthSubColumn(grid,key){
-        let str = grid.header[key].width + 'px ';
-        grid.header[key].child.forEach(el => {
-          if (grid.header[el].child.length)
-            str += +grid.header[el].width + getChildWidth(grid,el) + 'px ';
-          else
-            str += grid.header[el].width + 'px ';
-        })
-        return str;
-      }
+      tree.root.forEach(el => {
+        if(el in tree){
+          treeWidth.root += +header[el].width + subWidth(el,tree,header,true) + 'px '
+        }else
+          treeWidth.root += header[el].width + 'px ';
+      });
 
-      let grid = s.grid[name], str = grid.setting.minWidth + 'px ';
-      grid.keyHeader.forEach(key => {
-        if(grid.includeHeader.includes(key)) {
-          if (grid.header[key].child.length)
-            str += +grid.header[key].width + getChildWidth(grid,key) + 'px ';
-          else
-            str += grid.header[key].width + 'px ';
-        }
-      })
-      s.grid[name].setting.columnWidth = {
-        row : str
-      };
-
-      for(let key in s.grid[name].header){
-        if (s.grid[name].header[key].child.length) {
-          s.grid[name].setting.columnWidth[key] = getWidthSubColumn(s.grid[name],key);
+      for(let key in tree){
+        if(key != 'root'){
+          treeWidth[key] = +header[key].width + 'px ' + subWidth(key,tree,header,true) + 'px';
         }
       }
-    },
-    /*
 
-    includeHeader : function(s){
-      let includeHeader = Object.keys(s.grid.header);
-      for(let key in s.grid.header){
-        if(s.grid.header[key].child.length){
-          includeHeader = includeHeader.filter(x => !s.grid.header[key].child.includes(x));
+      Vue.set(s.grid[name], 'virtualHeader', {});
+      Vue.set(s.grid[name].virtualHeader, 'tree', tree);
+      Vue.set(s.grid[name].virtualHeader, 'sortableTree', sortableTree);
+      Vue.set(s.grid[name].virtualHeader, 'list', list);
+      Vue.set(s.grid[name].virtualHeader, 'listWidth', listWidth);
+      Vue.set(s.grid[name].virtualHeader, 'scrollWidth', scrollWidth);
+      Vue.set(s.grid[name].virtualHeader, 'treeWidth', treeWidth);
+    },
+    updateHeader : function(s,data){
+      data.update.forEach(el => {
+        s.grid[data.grid].header[el.key] = {
+          ...s.grid[data.grid].header[el.key],
+          ...el.params
         }
-      }
-      s.grid.setting.includeHeader = includeHeader;
-    },
-    sortableHeader : function(s){
-      function getSort(s,key){
-        let arr = [];
-        s.grid.header[key].child.forEach(el => {
-          let child = s.grid.header[el], elements = [];
-          if(child.child.length){
-            elements = getSort(s,el);
-          }
-          arr.push({sort : child.sort, name : child.name, key : el, elements : elements})
-        })
-        return arr.sort(function(a,b){return a.sort - b.sort});
-      }
-      let sortable = [];
-      s.grid.setting.includeHeader.forEach(key => {
-        let el = s.grid.header[key], elements = [];
-        if(el.child.length)
-          elements = getSort(s,key);
-
-        sortable.push({sort : el.sort, name : el.name, key : key, elements : elements});
-      })
-      sortable = sortable.sort(function(a,b){return a.sort - b.sort});
-
-      s.grid.setting.sortableHeader = sortable;
-    },
-    sortableHeaderReset : function(s, sortable){
-      let sort = 0;
-      s.grid.setting.sortableHeader = sortable.map(el => {
-        sort += 10;
-        s.grid.header[el.key].sort = sort;
-        el.sort = sort;
-        return el;
       });
     },
-
-
-    setColumnWidth : function(s,data){
-      s.grid.header[data.key].width = data.width;
-    },*/
+    normalizeElement : function(s, data){
+      Vue.set(s.grid[data.name], 'elements', data.data.elements);
+    },
+    showContext : function(s, data){
+      console.log(s.grid[data.name].context);
+      Vue.set(s.grid[data.name].context, 'row', data.row);
+    },
   },
   actions: {
     createGrid : function({commit},data){
       commit('createGrid',data.name);
+      commit('normalizeContext',data);
       commit('normalizeSetting',data);
       commit('normalizeHeader',data);
+      commit('virtualHeader',data.name);
       commit('normalizeElement',data);
-      commit('sortableHeader',data.name);
-      commit('keyHeader',data.name);
-      commit('countWidthHeader',data.name);
-      commit('countWidthColumn',data.name);
     },
     resize : function({commit},data){
-      commit('updateWidthHeader',data);
-      commit('countWidthHeader',data.name);
+      commit('updateHeader',{
+        grid : data.name,
+        update : [{
+          key : data.key,
+          params : {
+            width : data.width
+          }
+        }]
+      });
+      commit('virtualHeader',data.name);
     },
-/*    setGrid : async function({commit},grid){
-      await
-      await commit('includeHeader');
-      await commit('sortableHeader');
-      await commit('countWidthHeader');
-      await commit('countWidthColumn');
-    },
-    setColumnWidth : async function({commit},data){
-      await commit('countWidthColumn');
-    },
-    sortableHeaderReset : async function({commit},data){
-      await commit('sortableHeaderReset',data);
-    }*/
-
+    sortable : function({commit},data){
+      commit('updateHeader',{
+        grid : data.name,
+        update : data.data
+      });
+      commit('virtualHeader',data.name);
+    }
   },
   getters : {
-    keyHeader     : s => name => s.grid[name].keyHeader,
-    includeHeader : s => name => s.grid[name].includeHeader,
-    header        : s => name => s.grid[name].header,
-    setting       : s => name => s.grid[name].setting,
-    elements      : s => name => s.grid[name].elements,
-/*    grid : s => s.grid,
-    gridHeader : s => s.grid.header,
-    gridSetting : s => s.grid.setting,
-    columnWidth : s => s.grid.setting.columnWidth,
-    includeHeader : s => s.grid.setting.includeHeader,
-    sortableHeader : s => s.grid.setting.sortableHeader,*/
+    keyHeader       : s => name => s.grid[name].keyHeader,
+    virtualHeader   : s => name => s.grid[name].virtualHeader,
+    context         : s => name => s.grid[name].context,
+    header          : s => name => s.grid[name].header,
+    setting         : s => name => s.grid[name].setting,
+    elements        : s => name => s.grid[name].elements,
   }
 })

@@ -14,6 +14,20 @@ export default {
   data: function (){
     return {
       main_grid : {
+        context : [
+          {
+            name : 'Тестирование',
+            function : function(row){
+              console.log(row,1);
+            }
+          },
+          {
+            name : 'Тестирование2',
+            function : function(row){
+              console.log(row,2);
+            }
+          }
+        ],
         setting : {
           headerWidth : '',
         },
@@ -26,7 +40,7 @@ export default {
           column_1 : {
             name : 'Заголовок 1',
             width : 360,
-            child : ['column_2']
+            child : ['column_2','column_3']
           },
           column_2 : {
             name : 'Заголовок 2',
@@ -68,7 +82,10 @@ export default {
                           {
                             value : 'Колонка 2.2'
                           }
-                        ]
+                        ],
+                        column_3: [{
+                          value : 'Колонка 3'
+                        }],
                       }
                     },
                     {
@@ -87,16 +104,16 @@ export default {
                           {
                             value : 'Колонка 2.4'
                           }
-                        ]
+                        ],
+                        column_3: [{
+                          value : 'Колонка 3'
+                        }],
                       }
                     }
                   ]
                 }
               }
             ],
-            column_3: [{
-              value : 'Колонка 3'
-            }],
             column_4: [{
               value : 'Колонка 4'
             }],

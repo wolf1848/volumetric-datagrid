@@ -1,6 +1,5 @@
 <template>
-  <fragment>
-    <div class="row-body" v-if="item.length > 1">
+    <div class="row-body">
       <template v-for="(column,key) in item">
         <div class="row-body" :style="[rowWidth]" v-if="'child' in column">
           <div class="column-body">
@@ -8,43 +7,33 @@
               {{ column.value }}
             </span>
           </div>
-          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" :grid="grid" />
+          <template v-for="childKey in virtualHeader.tree[columnKey]">
+          <Column
+              :item="column.child[childKey]"
+              :columnKey="childKey"
+              :key="childKey"
+              :grid="grid" />
+          </template>
         </div>
         <div class="column-body" v-else>
-          <span :key="key">
+          <span>
             {{ column.value }}
           </span>
         </div>
       </template>
     </div>
-    <template v-else>
-      <template v-for="(column,key) in item">
-        <div class="row-body" :style="[rowWidth]" v-if="'child' in column">
-          <div class="column-body">
-              <span>
-                {{ column.value }}
-              </span>
-          </div>
-          <Column v-for="(child,childKey) in column.child" :item="child" :columnKey="childKey" :key="childKey" :grid="grid"/>
-        </div>
-        <div class="column-body" v-else>
-            <span :key="key">
-              {{ column.value }}
-            </span>
-        </div>
-      </template>
-    </template>
-  </fragment>
 </template>
 <script>
-
 export default {
   name : 'Column',
   props : ['grid','item','columnKey'],
   computed : {
-    rowWidth : function(){
-      return {'grid-template-columns' : this.$store.getters.setting(this.grid).columnWidth[this.columnKey]};
+    virtualHeader : function(){
+      return this.$store.getters.virtualHeader(this.grid);
     },
+    rowWidth : function(){
+      return {'grid-template-columns' : this.virtualHeader.treeWidth[this.columnKey]};
+    }
   }
 }
 </script>

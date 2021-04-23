@@ -1,53 +1,61 @@
 <template>
-
-  <div class="sort-grid-body">
-    <VueDraggableSortable :value="sortableHeader" :list="list" @input="test" v-bind="{animation: 200}">
-      <transition-group type="transition">
-        <div v-for="element in sortableHeader" :key="element.key">
-          <div class="sort-grid-item">
-            <input type="checkbox" class="sort-grid-checkbox" checked="">
-            <label class="sort-grid-label">{{element.name}}</label>
-          </div>
-          <VueDraggableSortable v-model="element.elements" class="drag-wrapper-child">
-            <div v-for="el in element.elements" :key="el.key">
-              <div class="sort-grid-item">
-                <input type="checkbox" class="sort-grid-checkbox" checked="">
-                <label class="sort-grid-label">{{el.name}}</label>
-              </div>
-            </div>
-          </VueDraggableSortable>
+  <VueDraggableSortable v-model="value" v-bind="{animation: 200}" class="drag-wrapper">
+    <transition-group type="transition">
+      <div v-for="element in value" :key="element">
+        <div class="sort-grid-item">
+          <input type="checkbox" class="sort-grid-checkbox" :checked="parentShow && header[element].show" @click="visibleColumn($event,element)" />
+          <label class="sort-grid-label">{{header[element].name}}</label>
+          <i :class="['el-icon-arrow-down','sortable-icon',{'show' : visible[element]}]" v-if="element in virtualHeader.tree" @click="visibleTree(element)"></i>
         </div>
-      </transition-group>
-    </VueDraggableSortable>
-  </div>
-
+        <Sortable v-if="element in virtualHeader.tree" :grid="grid" :tree="element" v-show="visible[element]" :parentShow="header[element].show" />
+      </div>
+    </transition-group>
+  </VueDraggableSortable>
 </template>
 <script>
 import VueDraggableSortable from 'vuedraggable'
 export default{
   name : 'Sortable',
+  props : ['grid','tree','parentShow'],
   components : { VueDraggableSortable },
   computed : {
-    sortableHeader : {
+    header : function(){
+      return this.$store.getters.header(this.grid);
+    },
+    virtualHeader : function(){
+      return this.$store.getters.virtualHeader(this.grid);
+    },
+    value : {
       get : function() {
-        return this.$store.state.grid.setting.sortableHeader;
+        return this.$store.getters.virtualHeader(this.grid).sortableTree[this.tree];
       },
       set : function(value){
-        this.$store.dispatch('sortableHeaderReset',value)
+        let update = [];
+        value.forEach((el,i) => {
+          update.push({key : el, params : {sort : i}});
+        });
+        this.$store.dispatch('sortable', {name : this.grid,data : update});
       }
     },
   },
   data : function(){
     return {
-      list : this.sortableHeader
-    }
+      visible : {}
+    };
   },
   methods : {
-    test : function(value){
-      //this.list = value
-      console.log(value,999);
+    visibleTree : function (key){
+      this.visible[key] = !this.visible[key];
+    },
+    visibleColumn : function (e,key){
+      this.$store.dispatch('sortable', {name : this.grid,data : [{key : key, params : {show :e.target.checked}}]});
     }
-
+  },
+  created() {
+    for(let key in this.virtualHeader.tree){
+      if(key != 'root')
+        this.$set(this.visible,key, false);
+    }
   }
 }
 </script>

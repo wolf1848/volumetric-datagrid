@@ -1,27 +1,42 @@
 <template>
   <fragment>
     <div class="wrapper">
+
+
+
+      <div class="pagination-wrapper">
+
+        <FilterElement :isAdmin="true" :contracts="[]" :userList="[]" />
+
+        <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-sizes="[10,20,50]"
+            :page-size="10"
+            layout="jumper, prev, pager, next, sizes, total"
+            :total="400">
+        </el-pagination>
+      </div>
+
       <!-- HEADER  -->
       <div class="header-wrapper">
         <div class="row-header" ref="rowHeader">
           <div class="column-header">
             <div class="column-header-handle column-header-handle-mr"></div>
-            <svg @click="dialogVisible = true" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path fill="currentColor" d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path>
-            </svg>
+            <i @click="dialogVisible = true" class="el-icon-s-tools" />
           </div>
 
           <VueDraggableResizable
               class-name="column-header"
               class-name-handle="column-header-handle"
-              v-for="(item,key) in keyHeader"
+              v-for="item in virtualHeader.list"
               :key="item"
               :draggable="false"
               :w="header[item].width"
               :h="'auto'"
-              :minWidth="setting.minWidth"
+              :minWidth="minWidth"
               @resizing="onResize"
-              @resizestop="onResizeStop"
               :handles="['mr']"
               :active="true"
               :prevent-deactivation="true"
@@ -34,22 +49,42 @@
       </div>
 
      <VueCustomScrollbar class="scroll-area" :settings="{suppressScrollY : true}" @ps-scroll-x="scrollHandle">
-        <div :style="[{width : setting.maxWidth + 'px'},{height : '15px'}]"></div>
+        <div :style="[{width : virtualHeader.scrollWidth + 'px'},{height : '15px'}]"></div>
       </VueCustomScrollbar>
 
      <div class="body-wrapper" ref="bodyWrapper">
-<!--        <template v-for="(i) in 30">-->
+        <template v-for="(i) in 20">
           <template v-for="(row,key) in elements">
-            <Row :grid="name" :row="row" :key="'row_' + key + '_' +  1" />
+            <Row :grid="name" :row="row" :key="key + i" :rowKey="key + i" />
           </template>
-<!--        </template>-->
+        </template>
+      </div>
+
+      <div class="pagination-wrapper">
+        <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-sizes="[10,20,50]"
+            :page-size="10"
+            layout="jumper, prev, pager, next, sizes, total"
+            :total="400">
+        </el-pagination>
       </div>
 
     </div>
 
-<!--    <el-dialog title="Настройка списка" :visible.sync="dialogVisible" width="30%" >
-      <Sortable />
-    </el-dialog>-->
+    <el-dialog title="Настройка списка" :visible.sync="dialogVisible" width="30%" >
+      <div class="sort-grid-body">
+        <Sortable :grid="name" :tree="'root'" :parentShow="true"/>
+      </div>
+    </el-dialog>
+
+    <portal to="grid-context">
+      <div class="context-menu-wrapper" v-click-outside="test">
+        <div class="context-menu-element" v-for="(item,i) in context.menu" @click="item.function(elements[0])" :key="i">{{item.name}}</div>
+      </div>
+    </portal>
 
   </fragment>
 </template>
@@ -60,20 +95,25 @@ import VueCustomScrollbar from 'vue-custom-scrollbar'
 import "vue-custom-scrollbar/dist/vueScrollbar.css"
 import Row from './row'
 import Sortable from './sortable'
+import Pagination from './pagination'
+import FilterElement from './filterElement'
 
 export default {
   name : 'Grid',
   props : ['name'],
-  components : {VueDraggableResizable, Sortable, VueCustomScrollbar, Row},
+  components : {VueDraggableResizable, VueCustomScrollbar, Row, Sortable, Pagination, FilterElement},
   computed : {
-    keyHeader : function(){
-      return this.$store.getters.keyHeader(this.name);
+    context : function(){
+      return this.$store.getters.context(this.name);
+    },
+    virtualHeader : function(){
+      return this.$store.getters.virtualHeader(this.name);
     },
     header : function(){
       return this.$store.getters.header(this.name);
     },
-    setting : function(){
-      return this.$store.getters.setting(this.name);
+    minWidth : function(){
+      return this.$store.getters.setting(this.name).minWidth;
     },
     elements : function(){
       return this.$store.getters.elements(this.name);
@@ -84,31 +124,73 @@ export default {
     return {
       offsetScrollX : 0,
       activeResizeKey : null,
-      dialogVisible : false
+      dialogVisible : false,
+      currentPage: 5,
     };
   },
   mounted : function(){
-    this.$refs.rowHeader.style.gridTemplateColumns = this.setting.headerWidth;
+    this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
+  },
+  updated : function(){
+    this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
   },
   methods : {
     onResize: function (x,y,w,h) {
       this.$store.dispatch('resize',{key : this.activeResizeKey,width : w, name : this.name});
-      this.$refs.rowHeader.style.gridTemplateColumns = this.setting.headerWidth;
-    },
-    onResizeStop: function (x,y,w,h) {
-      //this.$store.dispatch('setColumnWidth',{key : this.activeResizeKey,width : w, name : this.name});
+      this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
     },
     scrollHandle(e) {
       let left = e.target.scrollLeft;
       this.$refs.rowHeader.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
       this.$refs.rowHeader.style.left = -left + 'px';
-      // this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
-      // this.$refs.bodyWrapper.style.left = -left + 'px';
+      this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
+      this.$refs.bodyWrapper.style.left = -left + 'px';
     },
+    handleSizeChange(val) {
+      console.log(`${val} items per page`);
+    },
+    handleCurrentChange(val) {
+      console.log(`current page: ${val}`);
+    },
+    test : function(){
+      this.$store.commit('showContext',{name : this.name,row : null});
+    }
   },
 }
 </script>
 <style>
+html,
+body {
+  height: 100%;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  overflow-x: hidden;
+  min-width: 320px;
+  background: #FFFFFF;
+  font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.4285em;
+  color: rgba(0, 0, 0, 0.87);
+  font-smoothing: antialiased;
+}
+/* PAGINATION */
+.pagination-wrapper{
+  display: flex;
+}
+.pagination-wrapper > .el-pagination{
+  display: flex;
+  margin-left: auto;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
 /* HEADER */
 .wrapper {
   padding: 20px;
@@ -119,12 +201,10 @@ export default {
   z-index: 1;
 }
 .row-header{
-  border-bottom: 2px #eef2f4 solid;
   background: #fff;
   display: grid;
   grid-gap: 0vw;
   z-index: 1;
-  overflow: hidden;
 }
 .body-wrapper,
 .row-header {
@@ -143,6 +223,8 @@ export default {
 .column-header{
   align-items: center;
   box-sizing: border-box;
+  border-bottom: 2px #eef2f4 solid;
+  height: 100% !important;
 }
 .column-header span{
   overflow: hidden;
@@ -182,9 +264,13 @@ export default {
 .column-header:first-child .column-header-handle-mr:hover{
   cursor: auto;
 }
-.column-header svg{
-  width: 15px;
+.column-header i{
   cursor: pointer;
+  font-size: 16px;
+  line-height: 0;
+  top: 2px;
+  position: relative;
+  left: 5px;
 }
 /* SCROLL */
 .scroll-area{
@@ -213,8 +299,13 @@ export default {
 .column-body{
   align-items: start;
 }
-.column-body svg{
-  width: 14px;
+.column-body i{
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 0;
+  top: 2px;
+  position: relative;
+  left: 10px;
 }
 .column-body span{
   overflow: hidden;
@@ -229,6 +320,36 @@ export default {
   vertical-align: top;
   font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
 }
+.column-body span.icon{
+  width: 100%;
+  z-index: 10;
+  overflow: unset;
+}
+.context-menu-wrapper {
+  overflow: hidden;
+  left: 35px;
+  top: 0px;
+  padding: 0;
+  position: absolute;
+  width: 180px;
+  z-index: 10;
+  background: #fff;
+  box-shadow: 0 7px 21px rgb(83 92 105 / 12%), 0 -1px 6px 0 rgb(83 92 105 / 6%);
+}
+.context-menu-element{
+  padding: 5px;
+  border-bottom: 1px solid #dcdfe6;
+  color: #535c69;
+  cursor: pointer;
+}
+.context-menu-element:hover{
+  color: #409EFF;
+}
+.context-menu-element:last-child{
+  border-bottom: 0;
+}
+
+
 
 /* SORTABLE */
 .el-dialog__body,
@@ -272,7 +393,19 @@ export default {
   margin: 0 7px;
   vertical-align: middle;
 }
-.drag-wrapper-child{
+.drag-wrapper .drag-wrapper{
   padding-left: 20px;
+}
+.sortable-icon{
+  position: absolute;
+  top: calc(50% - 12px);
+  right: 10px;
+  color: #000;
+  font-size: 24px;
+  cursor: pointer;
+  transform: rotate(0deg);
+}
+.sortable-icon.show{
+  transform: rotate(180deg)
 }
 </style>

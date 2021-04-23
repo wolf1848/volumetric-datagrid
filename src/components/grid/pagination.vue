@@ -1,71 +1,67 @@
 <template>
-  <sui-button-group basic>
-    <sui-button @click="first"
+  <el-button-group>
+    <el-button @click="first"
                 :disabled="hasFirst"
                 :class="`${hasFirst ? paginationClasses.buttonDisable : ''}`"
-                basic
-                :icon="'angle double left'"
+                :icon="'el-icon-d-arrow-left'"
     />
-    <sui-button @click="prev"
+    <el-button @click="prev"
                 :disabled="hasFirst"
                 :class="`${hasFirst ? paginationClasses.buttonDisable : ''}`"
-                basic
-                :icon="'angle left'"
+                :icon="'el-icon-arrow-left'"
     />
-    <sui-button v-show="rangeFirstPage !== 1"
+    <el-button v-show="rangeFirstPage !== 1"
                 @click="goto(1)"
                 :class="paginationClasses.button"
-                basic
-    >1</sui-button>
-    <sui-button v-show="rangeFirstPage === 3"
+    >1</el-button>
+    <el-button v-show="rangeFirstPage === 3"
                 @click="goto(2)"
                 :class="paginationClasses.button"
-                basic
-    >2</sui-button>
-    <sui-button v-show="rangeFirstPage !== 1 && rangeFirstPage !== 2 && rangeFirstPage !== 3"
+    >2</el-button>
+    <el-button v-show="rangeFirstPage !== 1 && rangeFirstPage !== 2 && rangeFirstPage !== 3"
                 :class="`${paginationClasses.buttonDisable}`"
-                icon="ellipsis horizontal"
+                icon="el-icon-more"
                 style="cursor:auto;color : black !important;"
     />
     <!-- range start -->
     <template v-for="page in range">
-      <sui-button basic
+      <el-button basic
                   :key="page"
                   @click="goto(page)"
                   :class="`${hasActive(page) ? paginationClasses.buttonActive : ''}`"
-      >{{page}}</sui-button>
+      >{{page}}</el-button>
     </template>
     <!-- range end -->
-    <sui-button v-show="rangeLastPage !== pageCount && rangeLastPage !== (pageCount - 1) && rangeLastPage !== (pageCount - 2)"
+    <el-button v-show="rangeLastPage !== pageCount && rangeLastPage !== (pageCount - 1) && rangeLastPage !== (pageCount - 2)"
                 :class="`${paginationClasses.buttonDisable}`"
-                icon="ellipsis horizontal"
+                icon="el-icon-more"
                 style="cursor:auto;color : black !important;"
     />
-    <sui-button v-show="rangeLastPage === (pageCount - 2)" @click="goto(pageCount - 1)"
+    <el-button v-show="rangeLastPage === (pageCount - 2)" @click="goto(pageCount - 1)"
                 basic
-    >{{(pageCount - 1)}}</sui-button>
-    <sui-button v-if="rangeLastPage !== pageCount"
+    >{{(pageCount - 1)}}</el-button>
+    <el-button v-if="rangeLastPage !== pageCount"
                 @click="goto(pageCount)"
                 basic
-    >{{pageCount}}</sui-button>
-    <sui-button @click="next"
+    >{{pageCount}}</el-button>
+    <el-button @click="next"
                 :disabled="hasLast"
                 :class="`${hasLast ? paginationClasses.buttonDisable : ''}`"
-                :icon="'angle right'"
+                :icon="'el-icon-arrow-right'"
                 basic
     />
-    <sui-button @click="last"
+    <el-button @click="last"
                 :disabled="hasLast"
                 :class="`${hasLast ? paginationClasses.buttonDisable : ''}`"
-                :icon="'angle double right'"
+                :icon="'el-icon-d-arrow-right'"
                 basic
     />
-    <sui-button style="cursor:auto;font-weight: bold">Перейти : </sui-button>
-    <sui-button style="padding: 0">
+    <el-button style="cursor:auto;font-weight: bold">Перейти : </el-button>
+    <el-button style="padding: 0">
       <input style="border: 0;outline: none;height: 100%;width: 40px;text-align: center" type="text" v-model="write" />
-    </sui-button>
-    <sui-button basic icon="arrow right" @click="goto(+write)"/>
-    </sui-button-group>
+    </el-button>
+    <el-button basic icon="arrow right" @click="goto(+write)"/>
+    </el-button-group>
 </template>
 
 <script>
