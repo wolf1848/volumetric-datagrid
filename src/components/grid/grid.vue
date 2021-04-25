@@ -6,7 +6,7 @@
 
       <div class="pagination-wrapper">
 
-        <FilterElement :isAdmin="true" :contracts="[]" :userList="[]" />
+        <Filterable :isAdmin="true" :contracts="[]" :userList="[]" />
 
         <el-pagination
             @size-change="handleSizeChange"
@@ -82,7 +82,7 @@
 
     <portal to="grid-context">
       <div class="context-menu-wrapper" v-click-outside="test">
-        <div class="context-menu-element" v-for="(item,i) in context.menu" @click="item.function(elements[0])" :key="i">{{item.name}}</div>
+        <div class="context-menu-element" v-for="(item,i) in context.menu" @click="eventContext(item.function)" :key="i">{{item.name}}</div>
       </div>
     </portal>
 
@@ -95,13 +95,12 @@ import VueCustomScrollbar from 'vue-custom-scrollbar'
 import "vue-custom-scrollbar/dist/vueScrollbar.css"
 import Row from './row'
 import Sortable from './sortable'
-import Pagination from './pagination'
-import FilterElement from './filterElement'
+import Filterable from './filterable'
 
 export default {
   name : 'Grid',
   props : ['name'],
-  components : {VueDraggableResizable, VueCustomScrollbar, Row, Sortable, Pagination, FilterElement},
+  components : {VueDraggableResizable, VueCustomScrollbar, Row, Sortable, Filterable},
   computed : {
     context : function(){
       return this.$store.getters.context(this.name);
@@ -145,6 +144,10 @@ export default {
       this.$refs.rowHeader.style.left = -left + 'px';
       this.$refs.bodyWrapper.style.clipPath = 'inset(0 '+(-left)+'px 0 '+left+'px)';
       this.$refs.bodyWrapper.style.left = -left + 'px';
+    },
+    eventContext : function(func){
+      func(this.elements[0]);
+      this.$store.commit('hideContext',this.name);
     },
     handleSizeChange(val) {
       console.log(`${val} items per page`);

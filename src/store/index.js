@@ -171,6 +171,9 @@ export default new Vuex.Store({
       console.log(s.grid[data.name].context);
       Vue.set(s.grid[data.name].context, 'row', data.row);
     },
+    hideContext : function(s, name){
+      Vue.set(s.grid[name].context, 'row', null);
+    },
   },
   actions: {
     createGrid : function({commit},data){
