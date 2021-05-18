@@ -103,19 +103,19 @@ export default {
   components : {VueDraggableResizable, VueCustomScrollbar, Row, Sortable, Filterable},
   computed : {
     context : function(){
-      return this.$store.getters.context(this.name);
+      return this.$store.getters["grid/context"](this.name);
     },
     virtualHeader : function(){
-      return this.$store.getters.virtualHeader(this.name);
+      return this.$store.getters["grid/virtualHeader"](this.name);
     },
     header : function(){
-      return this.$store.getters.header(this.name);
+      return this.$store.getters['grid/header'](this.name);
     },
     minWidth : function(){
-      return this.$store.getters.setting(this.name).minWidth;
+      return this.$store.getters['grid/setting'](this.name).minWidth;
     },
     elements : function(){
-      return this.$store.getters.elements(this.name);
+      return this.$store.getters['grid/elements'](this.name);
     },
 
   },
@@ -135,7 +135,7 @@ export default {
   },
   methods : {
     onResize: function (x,y,w,h) {
-      this.$store.dispatch('resize',{key : this.activeResizeKey,width : w, name : this.name});
+      this.$store.dispatch('grid/resize',{key : this.activeResizeKey,width : w, name : this.name});
       this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
     },
     scrollHandle(e) {
@@ -147,7 +147,7 @@ export default {
     },
     eventContext : function(func){
       func(this.elements[0]);
-      this.$store.commit('hideContext',this.name);
+      this.$store.commit('grid/hideContext',this.name);
     },
     handleSizeChange(val) {
       console.log(`${val} items per page`);
@@ -156,7 +156,7 @@ export default {
       console.log(`current page: ${val}`);
     },
     test : function(){
-      this.$store.commit('showContext',{name : this.name,row : null});
+      this.$store.commit('grid/showContext',{name : this.name,row : null});
     }
   },
 }

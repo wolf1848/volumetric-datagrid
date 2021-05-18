@@ -14,6 +14,11 @@ export default {
   data: function (){
     return {
       main_grid : {
+        filter : {
+          id : {
+            type : 'number'
+          }
+        },
         context : [
           {
             name : 'Тестирование',
@@ -28,9 +33,6 @@ export default {
             }
           }
         ],
-        setting : {
-          headerWidth : '',
-        },
         header : {
           id : {
             name : 'ID',
@@ -129,7 +131,7 @@ export default {
     };
   },
   created : function(){
-    this.$store.dispatch('createGrid', {name : 'main',data : this.main_grid});
+    this.$store.dispatch('grid/createGrid', {name : 'main',data : this.main_grid});
   },
 }
 </script>

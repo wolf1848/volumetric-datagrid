@@ -20,21 +20,21 @@ export default{
   components : { VueDraggableSortable },
   computed : {
     header : function(){
-      return this.$store.getters.header(this.grid);
+      return this.$store.getters['grid/header'](this.grid);
     },
     virtualHeader : function(){
-      return this.$store.getters.virtualHeader(this.grid);
+      return this.$store.getters['grid/virtualHeader'](this.grid);
     },
     value : {
       get : function() {
-        return this.$store.getters.virtualHeader(this.grid).sortableTree[this.tree];
+        return this.$store.getters['grid/virtualHeader'](this.grid).sortableTree[this.tree];
       },
       set : function(value){
         let update = [];
         value.forEach((el,i) => {
           update.push({key : el, params : {sort : i}});
         });
-        this.$store.dispatch('sortable', {name : this.grid,data : update});
+        this.$store.dispatch('grid/sortable', {name : this.grid,data : update});
       }
     },
   },
@@ -48,7 +48,7 @@ export default{
       this.visible[key] = !this.visible[key];
     },
     visibleColumn : function (e,key){
-      this.$store.dispatch('sortable', {name : this.grid,data : [{key : key, params : {show :e.target.checked}}]});
+      this.$store.dispatch('grid/sortable', {name : this.grid,data : [{key : key, params : {show :e.target.checked}}]});
     }
   },
   created() {
