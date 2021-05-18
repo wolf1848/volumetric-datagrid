@@ -1,9 +1,9 @@
 <template>
 
   <div class="filter-row">
-    <label class="label-filter">{{ 'ID' }}</label>
+    <label class="label-filter">{{ 'Список' }}</label>
     <div class="filter-fields">
-      <el-select v-model="operation" :class="'change-fields-number'">
+      <el-select v-model="operation" :class="'change-fields-list'">
         <el-option
             v-for="(item,i) in change"
             :key="i"
@@ -11,17 +11,7 @@
             :value="item.value">
         </el-option>
       </el-select>
-      <el-input
-          v-model="min"
-          :placeholder="'Введите значение'"
-          :class="'change-value'"
-      ></el-input>
-      <el-input
-          v-if="operation == '><'"
-          v-model="max"
-          :placeholder="'Введите значение'"
-          :class="'change-value'"
-      ></el-input>
+
       <el-button :class="'hide-fields'" icon="el-icon-close" @click="" />
     </div>
   </div>

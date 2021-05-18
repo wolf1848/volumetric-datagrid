@@ -20,6 +20,7 @@
       <div class="filter-wrapper" v-show="visible">
 
       <Number />
+      <List />
 
 
         <div class="filter-row">
@@ -59,9 +60,10 @@
 <script>
 
 import Number from './number'
+import List from './list'
 
 export default {
-  components : { Number},
+  components : { Number, List},
   data() {
     return {
       FilterNumber : {
@@ -198,12 +200,11 @@ span.value-filter {
   display: flex !important;
   margin-bottom: 10px;
 }
-.change-fields{
+.change-fields-number{
   display: flex !important;
   flex: 1 1 160px;
   padding-right: 10px;
   min-width: 160px;
-
 }
 .change-value{
   display: flex !important;
@@ -215,6 +216,15 @@ span.value-filter {
   flex: 1 1 40px;
   padding: 12px !important;
 }
+.change-fields-list{
+  display: flex !important;
+  flex: 1 100%;
+  padding-right: 10px;
+  min-width: 160px;
+}
+
+
+
 .clear-filter{
   margin-left: auto !important;
 }

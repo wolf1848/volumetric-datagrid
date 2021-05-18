@@ -4,7 +4,7 @@
 
       <div class="pagination-wrapper">
 
-<!--        <Filterable />-->
+        <Filterable />
 
         <el-pagination
             @size-change="handleSizeChange"
