@@ -148,42 +148,46 @@ export default {
                 scrollWidth += +header[key].width;
             });
 
-            function subWidth(key,tree,header,root = false, flag = false){
+
+            function getNumber(key,tree,header){
                 let w = 0;
-                if(root){
-                    root = !root;
+                if(key in tree) {
                     tree[key].forEach(el => {
-                        if(el in tree)
-                            flag = true;
+
+                        w += +header[el].width;
+
+                        if (el in tree)
+                            w += +getNumber(el, tree, header);
+
                     });
                 }
-                tree[key].forEach(el => {
-
-                    w += +header[el].width;
-
-                    if(!root && !flag)
-                        w += 'px ';
-
-                    if(el in tree)
-                        w += +subWidth(el, tree, header,root, flag);
-                });
-
-                if(!root && !flag)
-                    w = w.toString().slice(0,-3);
-
                 return w;
+            }
+            function getString(key,tree,header){
+                let w = 0,str = '';
+                if(key in tree) {
+                    tree[key].forEach(el => {
+                        w = 0;
+                        w += +header[el].width;
+
+                        if (el in tree)
+                            w += +getNumber(el, tree, header);
+
+                        str += +w + 'px '
+
+                    });
+                }
+                return str;
             }
 
             tree.root.forEach(el => {
-                if(el in tree){
-                    treeWidth.root += +header[el].width + subWidth(el,tree,header,true) + 'px '
-                }else
-                    treeWidth.root += header[el].width + 'px ';
+                treeWidth.root += +header[el].width + getNumber(el,tree,header) + 'px '
             });
 
             for(let key in tree){
-                if(key != 'root'){
-                    treeWidth[key] = +header[key].width + 'px ' + subWidth(key,tree,header,true) + 'px';
+                if(key  !== 'root'){
+                    treeWidth[key] = '';
+                    treeWidth[key] += +header[key].width + 'px ' + getString(key,tree,header);
                 }
             }
 

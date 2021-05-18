@@ -18,31 +18,9 @@
 
     <transition name="el-fade-in-linear">
       <div class="filter-wrapper" v-show="visible">
-        <div class="filter-row">
-          <label class="label-filter">{{ 'ID' }}</label>
-          <div class="filter-fields">
-            <el-select v-model="FilterNumber.operation" :class="'change-fields'">
-              <el-option
-                  v-for="(item,i) in FilterNumber.change"
-                  :key="i"
-                  :label="item.label"
-                  :value="item.value">
-              </el-option>
-            </el-select>
-            <el-input
-                v-model="FilterNumber.min"
-                :placeholder="'Введите значение'"
-                :class="'change-value'"
-            ></el-input>
-            <el-input
-                v-if="FilterNumber.operation == '><'"
-                v-model="FilterNumber.max"
-                :placeholder="'Введите значение'"
-                :class="'change-value'"
-            ></el-input>
-            <el-button :class="'hide-fields'" icon="el-icon-close" @click="minus('ID')" />
-          </div>
-        </div>
+
+      <Number />
+
 
         <div class="filter-row">
           <div class="filter-fields">
@@ -80,32 +58,14 @@
 
 <script>
 
+import Number from './number'
+
 export default {
-  props: ['isAdmin', 'contracts', 'userList'],
+  components : { Number},
   data() {
     return {
       FilterNumber : {
-        change : [
-          {
-            value: '=',
-            label: 'Точно'
-          },
-          {
-            value: '><',
-            label: 'Диапазон'
-          },
-          {
-            value: '>',
-            label: 'Больше чем'
-          },
-          {
-            value: '<',
-            label: 'Меньше чем'
-          }
-        ],
-        operation : '><',
-        min : '',
-        max : ''
+
       },
       visible : false,
       showValue : [

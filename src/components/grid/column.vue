@@ -8,11 +8,11 @@
             </span>
           </div>
           <template v-for="childKey in virtualHeader.tree[columnKey]">
-          <Column
-              :item="column.child[childKey]"
-              :columnKey="childKey"
-              :key="childKey"
-              :grid="grid" />
+            <Column
+                :item="column.child[childKey]"
+                :columnKey="childKey"
+                :key="childKey"
+                :grid="grid" />
           </template>
         </div>
         <div class="column-body" v-else>

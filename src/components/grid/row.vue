@@ -1,5 +1,5 @@
 <template>
-  <div class="row-body" :style="[{'grid-template-columns' : virtualHeader.treeWidth.root}]">
+  <div class="row-body" :style="[{'grid-template-columns' : virtualHeader.treeWidth.root},{width : virtualHeader.scrollWidth + 'px'}]">
     <div class="column-body">
         <span class="icon">
           <i class="el-icon-s-unfold" @click="$store.commit('grid/showContext',{name : grid,row : rowKey})"/>

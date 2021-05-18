@@ -2,11 +2,9 @@
   <fragment>
     <div class="wrapper">
 
-
-
       <div class="pagination-wrapper">
 
-        <Filterable :isAdmin="true" :contracts="[]" :userList="[]" />
+<!--        <Filterable />-->
 
         <el-pagination
             @size-change="handleSizeChange"
@@ -95,7 +93,7 @@ import VueCustomScrollbar from 'vue-custom-scrollbar'
 import "vue-custom-scrollbar/dist/vueScrollbar.css"
 import Row from './row'
 import Sortable from './sortable'
-import Filterable from './filterable'
+import Filterable from '../filterable/filterable'
 
 export default {
   name : 'Grid',
@@ -129,9 +127,11 @@ export default {
   },
   mounted : function(){
     this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
+    this.$refs.rowHeader.style.width = this.virtualHeader.scrollWidth + 'px';
   },
   updated : function(){
     this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
+    this.$refs.rowHeader.style.width = this.virtualHeader.scrollWidth + 'px';
   },
   methods : {
     onResize: function (x,y,w,h) {
@@ -158,7 +158,7 @@ export default {
     test : function(){
       this.$store.commit('grid/showContext',{name : this.name,row : null});
     }
-  },
+  }
 }
 </script>
 <style>
@@ -294,6 +294,7 @@ body {
 /* BODY */
 .body-wrapper > .row-body{
   border-bottom: 2px #eef2f4 solid;
+  width: auto;
 }
 .row-body{
   display: grid;
