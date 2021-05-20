@@ -21,6 +21,7 @@
 
       <Number />
       <List />
+      <SearchList />
 
 
         <div class="filter-row">
@@ -61,9 +62,10 @@
 
 import Number from './number'
 import List from './list'
+import SearchList from './searchlist'
 
 export default {
-  components : { Number, List},
+  components : { Number, List, SearchList},
   data() {
     return {
       FilterNumber : {

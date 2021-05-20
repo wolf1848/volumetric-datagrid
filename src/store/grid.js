@@ -2,7 +2,23 @@ import Vue from 'vue'
 
 const defaultGrid = {
     //Фильтр по полям
-    filter : [],
+    filter : {
+
+    },
+    pagination : {
+        show : 'full',//top//bottom//none
+        defaultSize : 10,
+        sizes : [10,20,50],
+        layout : ['jumper', 'prev', 'pager', 'next', 'sizes', 'total'],
+        total : 400,
+        page : 1,
+        changeSize : function(value){
+            console.log(`${value} items per page`);
+        },
+        changePage : function(value){
+            console.log(`current page: ${value}`);
+        }
+    },
     // Контекстное меню применяемое к каждому ряду таблицы
     context : {
         row : null, // Ряд применения контекста
@@ -28,6 +44,12 @@ export default {
         },
         normalizeContext : function(s,data){
             s.grid[data.name].context.menu = data.data.context;
+        },
+        normalizePagination : function(s,data){
+            s.grid[data.name].pagination = {
+                ...s.grid[data.name].pagination,
+                ...data.data.pagination
+            }
         },
         normalizeSetting : function(s,data){
             s.grid[data.name].setting = {
@@ -222,6 +244,7 @@ export default {
         createGrid : function({commit},data){
             commit('createGrid',data.name);
             commit('normalizeContext',data);
+            commit('normalizePagination',data);
             commit('normalizeSetting',data);
             commit('normalizeHeader',data);
             commit('virtualHeader',data.name);
@@ -251,6 +274,7 @@ export default {
         keyHeader       : s => name => s.grid[name].keyHeader,
         virtualHeader   : s => name => s.grid[name].virtualHeader,
         context         : s => name => s.grid[name].context,
+        pagination      : s => name => s.grid[name].pagination,
         header          : s => name => s.grid[name].header,
         setting         : s => name => s.grid[name].setting,
         elements        : s => name => s.grid[name].elements,

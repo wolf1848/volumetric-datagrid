@@ -7,13 +7,14 @@
         <Filterable />
 
         <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-sizes="[10,20,50]"
-            :page-size="10"
-            layout="jumper, prev, pager, next, sizes, total"
-            :total="400">
+            v-if="pagination.show == 'full' || pagination.show == 'top'"
+            @size-change="pagination.changeSize"
+            @current-change="pagination.changePage"
+            :current-page.sync="pagination.page"
+            :page-sizes="pagination.sizes"
+            :page-size="pagination.defaultSize"
+            :layout="pagination.layout.join(',')"
+            :total="pagination.total">
         </el-pagination>
       </div>
 
@@ -60,13 +61,14 @@
 
       <div class="pagination-wrapper">
         <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-sizes="[10,20,50]"
-            :page-size="10"
-            layout="jumper, prev, pager, next, sizes, total"
-            :total="400">
+            v-if="pagination.show == 'full' || pagination.show == 'bottom'"
+            @size-change="pagination.changeSize"
+            @current-change="pagination.changePage"
+            :current-page.sync="pagination.page"
+            :page-sizes="pagination.sizes"
+            :page-size="pagination.defaultSize"
+            :layout="pagination.layout.join(',')"
+            :total="pagination.total">
         </el-pagination>
       </div>
 
@@ -93,7 +95,7 @@ import VueCustomScrollbar from 'vue-custom-scrollbar'
 import "vue-custom-scrollbar/dist/vueScrollbar.css"
 import Row from './row'
 import Sortable from './sortable'
-import Filterable from '../filterable/filterable'
+import Filterable from './filterable/filterable'
 
 export default {
   name : 'Grid',
@@ -102,6 +104,9 @@ export default {
   computed : {
     context : function(){
       return this.$store.getters["grid/context"](this.name);
+    },
+    pagination : function(){
+      return this.$store.getters["grid/pagination"](this.name);
     },
     virtualHeader : function(){
       return this.$store.getters["grid/virtualHeader"](this.name);
@@ -126,6 +131,7 @@ export default {
     };
   },
   mounted : function(){
+    console.log(this.pagination);
     this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
     this.$refs.rowHeader.style.width = this.virtualHeader.scrollWidth + 'px';
   },
@@ -148,12 +154,6 @@ export default {
     eventContext : function(func){
       func(this.elements[0]);
       this.$store.commit('grid/hideContext',this.name);
-    },
-    handleSizeChange(val) {
-      console.log(`${val} items per page`);
-    },
-    handleCurrentChange(val) {
-      console.log(`current page: ${val}`);
     },
     test : function(){
       this.$store.commit('grid/showContext',{name : this.name,row : null});

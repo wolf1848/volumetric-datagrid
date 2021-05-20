@@ -18,6 +18,7 @@ Vue.use(PortalVue);
 Vue.use(Plugin);
 Vue.use(ElementUI, {locale});
 
+
 new Vue({
   store,
   render: function (h) { return h(App) }
