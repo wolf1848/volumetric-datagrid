@@ -3,7 +3,13 @@ import Vue from 'vue'
 const defaultGrid = {
     //Фильтр по полям
     filter : {
-
+        data : {},
+        filter : function(data){
+            console.log('Обьект фильтра : ' , data);
+        },
+        clear : function(){
+            console.log('Функция сброса фильтра');
+        }
     },
     pagination : {
         show : 'full',//top//bottom//none
@@ -97,19 +103,43 @@ export default {
                     ],
                     operation : '=',
                     min : '',
-                    max : ''
+                    max : '',
+                    show : true
+                },
+                list : {
+                    multiple : false,
+                    value : '',
+                    option : [],
+                    show : true
+                },
+                searchlist : {
+                    multiple : false,
+                    value : '',
+                    option : [],
+                    show : true,
+                    query : function(data){
+                        console.log('Метод для запроса на сервер. Текст запроса : ', data);
+                    }
                 }
             };
-            let gridFilter = [];
-            for(let key in data.filter){
-                gridFilter.push({
-                    ...filter[data.filter[key].type],
-                    ...data.filter[key],
+            let gridFilter = {
+                ...defaultGrid.filter,
+                ...data.data.filter
+            };
+            for(let key in data.data.filter.data){
+                gridFilter.data[key] = {
+                    ...filter[data.data.filter.data[key].type],
+                    ...data.data.filter.data[key],
                     key : key
-                });
+                };
+                if((data.data.filter.data.type == 'list' || data.data.filter.data.type == 'searchlist') && gridFilter.data[key].multiple)
+                    gridFilter.data[key].value = [];
             }
 
-            Vue.set(s.grid[name], 'filter', gridFilter);
+            Vue.set(s.grid[data.name], 'filter', gridFilter);
+        },
+        toggleFilter : function(s,data){
+            s.grid[data.name].filter.data[data.key].show = !s.grid[data.name].filter.data[data.key].show;
         },
         virtualHeader : function(s, name){
             let tree = {},
@@ -247,6 +277,7 @@ export default {
             commit('normalizePagination',data);
             commit('normalizeSetting',data);
             commit('normalizeHeader',data);
+            commit('normalizeFilter',data);
             commit('virtualHeader',data.name);
             commit('normalizeElement',data);
         },
@@ -276,6 +307,7 @@ export default {
         context         : s => name => s.grid[name].context,
         pagination      : s => name => s.grid[name].pagination,
         header          : s => name => s.grid[name].header,
+        filter          : s => name => s.grid[name].filter,
         setting         : s => name => s.grid[name].setting,
         elements        : s => name => s.grid[name].elements,
     }

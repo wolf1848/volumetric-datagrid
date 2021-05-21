@@ -1,30 +1,30 @@
 <template>
 
   <div class="filter-row">
-    <label class="label-filter">{{ 'Список с поиском' }}</label>
+    <label class="label-filter">{{ value.name }}</label>
     <div class="filter-fields">
         <el-select
-            v-model="users"
-            multiple
+            v-model="value.value"
+            :multiple="value.multiple"
             filterable
             remote
             reserve-keyword
             placeholder="Укажите ФИО"
-            :remote-method="searchUser"
+            :remote-method="search"
             :loading="loading"
             :disabled="false"
-            @change="clearSelectSearch('user_search')"
-            :ref="'user_search'"
+            @change="clearSelectSearch"
+            :ref="'search'"
             :class="'change-fields-list'"
         >
           <el-option
-              v-for="item in users"
+              v-for="item in value.option"
               :key="item.value"
               :label="item.label"
               :value="item.value">
           </el-option>
         </el-select>
-      <el-button :class="'hide-fields'" icon="el-icon-close" @click="" />
+      <el-button :class="'hide-fields'" icon="el-icon-close" @click="$store.commit('grid/toggleFilter',{name : grid,key : value.key})" />
     </div>
   </div>
 
@@ -33,6 +33,8 @@
 
 <script>
 export default {
+  name : 'SearchList',
+  props : ['value','grid'],
   data : function(){
     return {
       users : [],
@@ -40,36 +42,11 @@ export default {
     };
   },
   methods : {
-    clearSelectSearch : function(key){
-      this.$refs[key].query = '';
+    clearSelectSearch : function(){
+      this.$refs['search'].query = '';
     },
-    searchUser: function(query) {
-      if (query !== '')
-        this.search(query,'user');
-    },
-    searchCompany : function(query){
-      if (query !== '')
-        this.search(query,'company');
-    },
-    search : async function(query,key){
-      let url,obj;
-      if(key == 'user'){
-        obj = 'users';
-        url = '/api/vicarious/user/search';
-      }
-      else if(key == 'company'){
-        obj = 'company';
-        url = '/api/vicarious/company/search';
-      }
-
-      // let result = await this.$store.dispatch('query',{url : url,data :  {q : query}});
-      // if(result.status == 'success'){
-      //   this[obj] = result.data;
-      //   this[obj+'Selected'].forEach(el => {
-      //     if(this[obj].indexOf(el.key) < 0)
-      //       this[obj].push(el);
-      //   });
-      // }
+    search : async function(query){
+      this.value.query(query);
     },
   },
   watch : {

@@ -4,7 +4,7 @@
 
       <div class="pagination-wrapper">
 
-        <Filterable />
+        <Filterable :grid="name" />
 
         <el-pagination
             v-if="pagination.show == 'full' || pagination.show == 'top'"

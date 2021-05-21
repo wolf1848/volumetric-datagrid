@@ -19,28 +19,32 @@
     <transition name="el-fade-in-linear">
       <div class="filter-wrapper" v-show="visible">
 
-      <Number />
-      <List />
-      <SearchList />
+        <template v-for="(item,key) in filter.data">
+          <Number :key="key" :grid="grid" v-if="item.type == 'number' && item.show" v-model="filter.data[key]" />
+          <List :key="key" :grid="grid" v-if="item.type == 'list' && item.show" v-model="filter.data[key]" />
+          <SearchList :key="key" :grid="grid" v-if="item.type == 'searchlist' && item.show" v-model="filter.data[key]" />
+        </template>
+
+<!--      <Date />-->
 
 
         <div class="filter-row">
           <div class="filter-fields">
-            <el-dropdown @command="plus" class="ml-2">
+            <el-dropdown @command="showElement" class="ml-2">
               <el-button>+</el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
-                    v-for="item in []"
-                    :key="item.id"
-                    :command="item.id"
-                    :disabled="findindex(item.id)"
+                    v-for="item in filter.data"
+                    v-if="!item.show"
+                    :key="item.key"
+                    :command="item.key"
                 >
                   {{ item.name }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
 
-            <el-button class="clear-filter" @click="clear">Сбросить</el-button>
+            <el-button class="clear-filter" @click="clear">{{filtered ? 'Сбросить' : 'Очистить'}}</el-button>
 
             <el-button
                 type="primary "
@@ -63,29 +67,21 @@
 import Number from './number'
 import List from './list'
 import SearchList from './searchlist'
+import Date from './date'
 
 export default {
-  components : { Number, List, SearchList},
+  components : { Number, List, SearchList, Date},
+  computed : {
+    filter : function(){
+        return this.$store.getters['grid/filter'](this.grid);
+    }
+  },
+  props : ['grid'],
   data() {
     return {
-      FilterNumber : {
-
-      },
       visible : false,
-      showValue : [
-        {
-          name : 'ID',
-          value : '1,2,3'
-        },
-        {
-          name : 'Пользователь',
-          value : 'Дмитриев Иван, Смирнов Константин'
-        },
-        {
-          name : 'и еще',
-          value : '3'
-        }
-      ],
+      filtered : false,
+      showValue : [],
     };
   },
   methods: {
@@ -95,54 +91,76 @@ export default {
     hide : function() {
       this.visible = false
     },
-
-    plus(id) {
-      let s = this
-      //console.log(id)
-      this.filter.push(this.filterhide.find((item) => item.id == id))
-
-
+    showElement : function(key) {
+      this.$store.commit('grid/toggleFilter',{name : this.grid,key : key})
     },
-    minus(id) {
-      let key = this.filter.findIndex((item) => item.id == id)
-      if (key != -1) {
-        this.filter.splice(key, 1)
+    clear : function(){
+      this.showValue = [];
+      if(this.filtered){
+        this.filtered = false;
+        this.filter.clear(this.filter.data);
+      }else{
+        for(let key in this.filter.data){
+          switch(this.filter.data[key].type){
+            case 'number' :
+              this.filter.data[key].min = '';
+              this.filter.data[key].max = '';
+              this.filter.data[key].operation = '=';
+            break;
+            case 'list' :
+              this.filter.data[key].value = this.filter.data[key].multiple ?  [] : '';
+            break;
+          }
+        }
       }
     },
-    clear() {
-      let s = this
-      let filter = this.filter
-      let f = []
+    onSubmit : function() {
+      this.filtered = true;
+      this.showValue = [];
+      for(let key in this.filter.data) {
+        if (this.filter.data[key].type == 'number' && this.filter.data[key].min > 0) {
+          let obj = {
+            name: this.filter.data[key].name,
+            value: ''
+          };
+          if (this.filter.data[key].operation == '><') {
+            obj.value = this.filter.data[key].min + ' - ' + this.filter.data[key].max;
+          } else
+            obj.value = this.filter.data[key].operation + ' ' + this.filter.data[key].min;
 
-      filter.forEach((item, i) => {
-        f.push({ id: item.id, value: '' })
-        filter[i].value = ''
-      })
+          this.showValue.push(obj);
+        }else if (this.filter.data[key].type == 'list' && this.filter.data[key].value) {
+          let obj = {
+            name: this.filter.data[key].name,
+            value: ''
+          };
+          if (this.filter.data[key].value instanceof Array) {
+            let arr = this.filter.data[key].value.map(el => {
+              return this.filter.data[key].option.filter(option => {
+                return option.value == el;
+              })[0].label;
+            })
+            obj.value = arr.join();
+          } else
+            obj.value = this.filter.data[key].option.filter(option => {
+              return option.value == this.filter.data[key].value;
+            })[0].label;
 
-      localStorage.filter = JSON.stringify(f)
+          this.showValue.push(obj);
+        }
+      }
+      let len = this.showValue.length - 2;
+      this.showValue.splice(0,-2);
+      if(len > 0)
+        this.showValue.push({
+          name : 'ещё',
+          value : len
+        });
 
-      this.filter = filter
 
-      this.fshow = false
-
+      this.filter.filter(this.filter.data);
     },
-    onSubmit() {
-      let s = this
-      // запись фильтра в localStorage
-      let f = []
-      s.filter.forEach((item) => {
-        f.push({
-          id: item.id,
-          value: item.value,
-          options: item.options ? item.options : [],
-        })
-      })
-      localStorage.filter = JSON.stringify(f)
-      // запись фильтра в localStorage
-      this.fshow = false
-
-    },
-  },
+  }
 }
 </script>
 <style>
@@ -224,9 +242,6 @@ span.value-filter {
   padding-right: 10px;
   min-width: 160px;
 }
-
-
-
 .clear-filter{
   margin-left: auto !important;
 }

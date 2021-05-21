@@ -15,9 +15,45 @@ export default {
     return {
       main_grid : {
         filter : {
-          id : {
-            type : 'number'
-          }
+          data : {
+            id: {
+              type: 'number',
+              name: 'ID'
+            },
+            column_1 : {
+              type : 'list',
+              name : 'Колонка 1',
+              option : [
+                {
+                  value: 'Option1',
+                  label: 'Опция 1'
+                },
+                {
+                  value: 'Option4',
+                  label: 'Опция 4'
+                }
+              ]
+            },
+            column_2 : {
+              type : 'searchlist',
+              name : 'Колонка 2',
+              multiple : true,
+              query : async function(data){
+                let query = await fetch('https://api/api/vicarious/user/search', {
+                  method: 'post',
+                  headers: {'Content-Type' : 'application/json;charset=utf-8'},
+                  body: JSON.stringify({q : data})
+                });
+                let result = await query.json();
+                if(result.status == 'success')
+                  this.option = result.data;
+                console.log(result,this);
+              }
+            },
+            // column_3 : {
+            //   type : 'date'
+            // },
+          },
         },
         context : [
           {
