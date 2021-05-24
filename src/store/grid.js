@@ -110,17 +110,43 @@ export default {
                     multiple : false,
                     value : '',
                     option : [],
+                    changeOption : [],
                     show : true
                 },
                 searchlist : {
                     multiple : false,
                     value : '',
                     option : [],
+                    changeOption : [],
                     show : true,
                     query : function(data){
                         console.log('Метод для запроса на сервер. Текст запроса : ', data);
                     }
-                }
+                },
+                date : {
+                    change : [
+                        {
+                            value: '=',
+                            label: 'Точно'
+                        },
+                        {
+                            value: '><',
+                            label: 'Диапазон'
+                        },
+                        {
+                            value: '>',
+                            label: 'Больше чем'
+                        },
+                        {
+                            value: '<',
+                            label: 'Меньше чем'
+                        }
+                    ],
+                    operation : '=',
+                    min : '',
+                    max : '',
+                    show : true
+                },
             };
             let gridFilter = {
                 ...defaultGrid.filter,
@@ -263,7 +289,6 @@ export default {
             Vue.set(s.grid[data.name], 'elements', data.data.elements);
         },
         showContext : function(s, data){
-            console.log(s.grid[data.name].context);
             Vue.set(s.grid[data.name].context, 'row', data.row);
         },
         hideContext : function(s, name){

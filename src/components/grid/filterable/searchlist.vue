@@ -14,6 +14,7 @@
             :loading="loading"
             :disabled="false"
             @change="clearSelectSearch"
+            @remove-tag="clearElement"
             :ref="'search'"
             :class="'change-fields-list'"
         >
@@ -37,51 +38,46 @@ export default {
   props : ['value','grid'],
   data : function(){
     return {
-      users : [],
       loading : false,
     };
   },
   methods : {
-    clearSelectSearch : function(){
+    clearElement : function(value){
+      this.value.changeOption = this.value.changeOption.filter(el => {
+        return el.value != value;
+      });
+    },
+    clearSelectSearch : function(value){
+      if(value instanceof Array) {
+        let arr = [];
+        value.forEach(el => {
+          let res;
+          res = this.value.changeOption.filter(op => {
+            return el == op.value;
+          })[0];
+          if (!res) {
+            res = this.value.option.filter(op => {
+              return el == op.value;
+            })[0];
+          }
+          arr.push(res);
+        });
+        this.value.changeOption = arr;
+      }else{
+        this.value.changeOption = [];
+        if(value){
+          this.value.changeOption.push(this.value.option.filter(op => {
+            return value == op.value;
+          })[0]);
+        }
+      }
       this.$refs['search'].query = '';
     },
     search : async function(query){
-      this.value.query(query);
+      this.loading = true;
+      await this.value.query(query);
+      this.loading = false;
     },
   },
-  watch : {
-    // 'queryData.type' : function(value){
-    //   if(value === 'complex'){
-    //     this.queryData.users = [];
-    //     this.users = [];
-    //     this.usersSelected = [];
-    //     this.queryData.company = [];
-    //     this.company = [];
-    //     this.companySelected = [];
-    //   }else if(value === 'personal'){
-    //     this.getData();
-    //   }
-    // },
-    // 'queryData.users' : function(value){
-    //   if(value instanceof Array){
-    //     let arr = [];
-    //     this.users.forEach(el => {
-    //       if(value.indexOf(el.key) >= 0)
-    //         arr.push(el);
-    //     });
-    //     this.usersSelected = arr;
-    //   }
-    // },
-    // 'queryData.company' : function(value){
-    //   if(value instanceof Array){
-    //     let arr = [];
-    //     this.company.forEach(el => {
-    //       if(value.indexOf(el.key) >= 0)
-    //         arr.push(el);
-    //     });
-    //     this.companySelected = arr;
-    //   }
-    // },
-  }
 }
 </script>

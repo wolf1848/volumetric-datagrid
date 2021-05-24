@@ -23,9 +23,8 @@
           <Number :key="key" :grid="grid" v-if="item.type == 'number' && item.show" v-model="filter.data[key]" />
           <List :key="key" :grid="grid" v-if="item.type == 'list' && item.show" v-model="filter.data[key]" />
           <SearchList :key="key" :grid="grid" v-if="item.type == 'searchlist' && item.show" v-model="filter.data[key]" />
+          <Date :key="key" :grid="grid" v-if="item.type == 'date' && item.show" v-model="filter.data[key]" />
         </template>
-
-<!--      <Date />-->
 
 
         <div class="filter-row">
@@ -110,6 +109,14 @@ export default {
             case 'list' :
               this.filter.data[key].value = this.filter.data[key].multiple ?  [] : '';
             break;
+            case 'searchlist' :
+              this.filter.data[key].value = this.filter.data[key].multiple ?  [] : '';
+            break;
+            case 'date' :
+              this.filter.data[key].min = '';
+              this.filter.data[key].max = '';
+              this.filter.data[key].operation = '=';
+              break;
           }
         }
       }
@@ -129,15 +136,27 @@ export default {
             obj.value = this.filter.data[key].operation + ' ' + this.filter.data[key].min;
 
           this.showValue.push(obj);
-        }else if (this.filter.data[key].type == 'list' && this.filter.data[key].value) {
+        }else if (this.filter.data[key].type == 'date' && this.filter.data[key].min) {
+          let obj = {
+            name: this.filter.data[key].name,
+            value: ''
+          };
+          if (this.filter.data[key].operation == '><') {
+            obj.value = this.filter.data[key].min + ' - ' + (this.filter.data[key].max ? this.filter.data[key].max : '');
+          } else
+            obj.value = this.filter.data[key].operation + ' ' + this.filter.data[key].min;
+
+          this.showValue.push(obj);
+        }else if (this.filter.data[key].type == 'list' && this.filter.data[key].value.length) {
+
           let obj = {
             name: this.filter.data[key].name,
             value: ''
           };
           if (this.filter.data[key].value instanceof Array) {
             let arr = this.filter.data[key].value.map(el => {
-              return this.filter.data[key].option.filter(option => {
-                return option.value == el;
+              return this.filter.data[key].option.filter(op => {
+                return el == op.value;
               })[0].label;
             })
             obj.value = arr.join();
@@ -147,17 +166,31 @@ export default {
             })[0].label;
 
           this.showValue.push(obj);
+        }else if (this.filter.data[key].type == 'searchlist' && this.filter.data[key].value.length) {
+          let obj = {
+            name: this.filter.data[key].name,
+            value: ''
+          };
+          if (this.filter.data[key].value instanceof Array) {
+            let arr = this.filter.data[key].changeOption.map(el => {
+              return el.label;
+            })
+            obj.value = arr.join();
+          } else
+            obj.value = this.filter.data[key].changeOption.filter(option => {
+              return option.value == this.filter.data[key].value;
+            })[0].label;
+
+          this.showValue.push(obj);
         }
       }
-      let len = this.showValue.length - 2;
-      this.showValue.splice(0,-2);
+      let len = this.showValue.length - 3;
+      this.showValue.splice(3);
       if(len > 0)
         this.showValue.push({
           name : 'ещё',
           value : len
         });
-
-
       this.filter.filter(this.filter.data);
     },
   }
@@ -273,5 +306,8 @@ span.value-filter {
   position: relative;
   display: flex;
   flex : 1 1 500px;
+}
+.el-date-editor .el-icon-circle-close{
+  margin-right: 10px !important;
 }
 </style>

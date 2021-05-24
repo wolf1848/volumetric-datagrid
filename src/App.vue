@@ -23,6 +23,7 @@ export default {
             column_1 : {
               type : 'list',
               name : 'Колонка 1',
+              multiple : true,
               option : [
                 {
                   value: 'Option1',
@@ -39,20 +40,29 @@ export default {
               name : 'Колонка 2',
               multiple : true,
               query : async function(data){
-                let query = await fetch('https://api/api/vicarious/user/search', {
-                  method: 'post',
-                  headers: {'Content-Type' : 'application/json;charset=utf-8'},
-                  body: JSON.stringify({q : data})
-                });
-                let result = await query.json();
-                if(result.status == 'success')
-                  this.option = result.data;
-                console.log(result,this);
+                // let query = await fetch('https://api/api/vicarious/user/search', {
+                //   method: 'post',
+                //   headers: {'Content-Type' : 'application/json;charset=utf-8'},
+                //   body: JSON.stringify({q : data})
+                // });
+                // let result = await query.json();
+                // if(result.status == 'success')
+                //   this.option = result.data;
+
+                this.option.push({
+                    value: 'Option' + this.option.length,
+                    label: 'Опция '+ this.option.length
+                  });
+                if(this.option.length > 3){
+                  this.option.splice(0,1);
+                }
+                //console.log(result,this);
               }
             },
-            // column_3 : {
-            //   type : 'date'
-            // },
+            column_3 : {
+              type : 'date',
+              name : 'Колонка 3',
+            },
           },
         },
         context : [
