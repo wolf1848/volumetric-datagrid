@@ -4,6 +4,7 @@ const defaultGrid = {
     //Фильтр по полям
     filter : {
         data : {},
+        show : false,
         filter : function(data){
             console.log('Обьект фильтра : ' , data);
         },
@@ -152,14 +153,16 @@ export default {
                 ...defaultGrid.filter,
                 ...data.data.filter
             };
-            for(let key in data.data.filter.data){
-                gridFilter.data[key] = {
-                    ...filter[data.data.filter.data[key].type],
-                    ...data.data.filter.data[key],
-                    key : key
-                };
-                if((data.data.filter.data.type == 'list' || data.data.filter.data.type == 'searchlist') && gridFilter.data[key].multiple)
-                    gridFilter.data[key].value = [];
+            if('filter' in data.data) {
+                for (let key in data.data.filter.data) {
+                    gridFilter.data[key] = {
+                        ...filter[data.data.filter.data[key].type],
+                        ...data.data.filter.data[key],
+                        key: key
+                    };
+                    if ((data.data.filter.data.type == 'list' || data.data.filter.data.type == 'searchlist') && gridFilter.data[key].multiple)
+                        gridFilter.data[key].value = [];
+                }
             }
 
             Vue.set(s.grid[data.name], 'filter', gridFilter);
