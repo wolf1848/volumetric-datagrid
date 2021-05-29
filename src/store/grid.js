@@ -160,7 +160,7 @@ export default {
                         ...data.data.filter.data[key],
                         key: key
                     };
-                    if ((data.data.filter.data.type == 'list' || data.data.filter.data.type == 'searchlist') && gridFilter.data[key].multiple)
+                    if ((data.data.filter.data[key].type == 'list' || data.data.filter.data[key].type == 'searchlist') && gridFilter.data[key].multiple)
                         gridFilter.data[key].value = [];
                 }
             }
