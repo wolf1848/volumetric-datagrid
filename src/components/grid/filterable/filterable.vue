@@ -69,10 +69,11 @@ import SearchList from './searchlist'
 import Date from './date'
 
 export default {
+  name : 'Filterable',
   components : { Number, List, SearchList, Date},
   computed : {
     filter : function(){
-        return this.$store.getters['grid/filter'](this.grid);
+        return this.$grid.getters['filter'](this.grid);
     }
   },
   props : ['grid'],
@@ -91,7 +92,7 @@ export default {
       this.visible = false
     },
     showElement : function(key) {
-      this.$store.commit('grid/toggleFilter',{name : this.grid,key : key})
+      this.$grid.commit('toggleFilter',{name : this.grid,key : key})
     },
     clear : function(){
       this.showValue = [];

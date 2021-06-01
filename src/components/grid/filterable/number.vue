@@ -22,7 +22,7 @@
           :placeholder="'Введите значение'"
           :class="'change-value'"
       ></el-input>
-      <el-button :class="'hide-fields'" icon="el-icon-close" @click="$store.commit('grid/toggleFilter',{name : grid,key : value.key})" />
+      <el-button :class="'hide-fields'" icon="el-icon-close" @click="$grid.commit('toggleFilter',{name : grid,key : value.key})" />
     </div>
   </div>
 

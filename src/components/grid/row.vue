@@ -2,7 +2,7 @@
   <div class="row-body" :style="[{'grid-template-columns' : virtualHeader.treeWidth.root},{width : virtualHeader.scrollWidth + 'px'}]">
     <div class="column-body">
         <span class="icon">
-          <i class="el-icon-s-unfold" @click="$store.commit('grid/showContext',{name : grid,row : rowKey})"/>
+          <i class="el-icon-s-unfold" @click="$grid.commit('showContext',{name : grid,row : rowKey})"/>
           <portal-target v-if="context" name="grid-context" />
         </span>
     </div>
@@ -24,10 +24,10 @@ export default {
   components : {Column},
   computed : {
     virtualHeader : function(){
-      return this.$store.getters['grid/virtualHeader'](this.grid);
+      return this.$grid.getters['virtualHeader'](this.grid);
     },
     context : function(){
-      return this.$store.getters["grid/context"](this.grid).row == this.rowKey ? true : false;
+      return this.$grid.getters["context"](this.grid).row == this.rowKey ? true : false;
     }
   },
 }

@@ -52,10 +52,8 @@
       </VueCustomScrollbar>
 
      <div class="body-wrapper" ref="bodyWrapper">
-        <template v-for="(i) in 20">
-          <template v-for="(row,key) in elements">
-            <Row :grid="name" :row="row" :key="key + i" :rowKey="key + i" />
-          </template>
+        <template v-for="(row,key) in elements">
+          <Row :grid="name" :row="row" :key="key" :rowKey="key" />
         </template>
       </div>
 
@@ -103,22 +101,22 @@ export default {
   components : {VueDraggableResizable, VueCustomScrollbar, Row, Sortable, Filterable},
   computed : {
     context : function(){
-      return this.$store.getters["grid/context"](this.name);
+      return this.$grid.getters["context"](this.name);
     },
     pagination : function(){
-      return this.$store.getters["grid/pagination"](this.name);
+      return this.$grid.getters["pagination"](this.name);
     },
     virtualHeader : function(){
-      return this.$store.getters["grid/virtualHeader"](this.name);
+      return this.$grid.getters["virtualHeader"](this.name);
     },
     header : function(){
-      return this.$store.getters['grid/header'](this.name);
+      return this.$grid.getters['header'](this.name);
     },
     minWidth : function(){
-      return this.$store.getters['grid/setting'](this.name).minWidth;
+      return this.$grid.getters['setting'](this.name).minWidth;
     },
     elements : function(){
-      return this.$store.getters['grid/elements'](this.name);
+      return this.$grid.getters['elements'](this.name);
     },
 
   },
@@ -131,7 +129,6 @@ export default {
     };
   },
   mounted : function(){
-    console.log(this.pagination);
     this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
     this.$refs.rowHeader.style.width = this.virtualHeader.scrollWidth + 'px';
   },
@@ -141,7 +138,7 @@ export default {
   },
   methods : {
     onResize: function (x,y,w,h) {
-      this.$store.dispatch('grid/resize',{key : this.activeResizeKey,width : w, name : this.name});
+      this.$grid.dispatch('resize',{key : this.activeResizeKey,width : w, name : this.name});
       this.$refs.rowHeader.style.gridTemplateColumns = this.virtualHeader.listWidth;
     },
     scrollHandle(e) {
@@ -153,10 +150,10 @@ export default {
     },
     eventContext : function(func){
       func(this.elements[0]);
-      this.$store.commit('grid/hideContext',this.name);
+      this.$grid.commit('hideContext',this.name);
     },
     test : function(){
-      this.$store.commit('grid/showContext',{name : this.name,row : null});
+      this.$grid.commit('showContext',{name : this.name,row : null});
     }
   }
 }

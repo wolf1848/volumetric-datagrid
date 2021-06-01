@@ -29,7 +29,7 @@ export default {
   props : ['grid','item','columnKey'],
   computed : {
     virtualHeader : function(){
-      return this.$store.getters['grid/virtualHeader'](this.grid);
+      return this.$grid.getters['virtualHeader'](this.grid);
     },
     rowWidth : function(){
       return {'grid-template-columns' : this.virtualHeader.treeWidth[this.columnKey]};
