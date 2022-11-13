@@ -1,0 +1,416 @@
+/* GENERAL */
+body{
+    overflow-x : hidden;
+}
+#workarea {
+    /*overflow-y: unset!important;*/
+}
+/* GENERAL */
+
+/* SHOW FIELDS MODAL */
+.vdg_showFieldsModal > .el-dialog__header{
+    padding: 15px 10px 0 10px;
+}
+.vdg_showFieldsModal > .el-dialog__header > .el-dialog__title{
+    line-height: 24px;
+}
+.vdg_showFieldsModal > .el-dialog__body{
+    padding: 5px 10px;
+}
+.vdg_showFieldsModal_scroll{
+    height: 400px;
+}
+.vdg_showFieldsModal_item{
+    display: inline-block;
+    overflow: hidden;
+    width: 100%;
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+.vdg_showFieldsModal_item > span:first-child{
+    top: 5px;
+}
+.vdg_showFieldsModal_item > span:last-child{
+    position: relative;
+    top: 3px;
+}
+/* SHOW FIELDS MODAL */
+
+/* GRID HEADER */
+.vdg_rowHeader{
+    display: grid;
+    clip-path: inset(0 15px 0 0);
+    overflow: hidden;
+    position: sticky;
+    top : 0;
+    z-index: 10;
+}
+.vdg_rowHeader_columnHeader{
+    position: relative;
+    display: grid;
+    max-width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+    height: 100%;
+    cursor: pointer;
+}
+.vdg_rowHeader_columnHeader > span{
+    overflow: hidden;
+    display: inline-block;
+    text-align: left;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: .5px;
+    line-height: 12px;
+}
+.vdg_rowHeader_span i.el-icon {
+    font-size: 15px;
+    position: absolute;
+    top: 2px;
+}
+.vdg_rowHeader_columnHeader.icon{
+    justify-content: center;
+}
+.vdg_rowHeader_columnHeader.icon i{
+    cursor: pointer;
+}
+.vdg_rowHeader_columnHeader_handle{
+    width: 20px;
+    height: 100%;
+    position: absolute;
+    left: calc(100% - 20px);
+    display: block;
+    cursor: col-resize;
+    opacity: 0;
+    transition: .5s;
+}
+.vdg_rowHeader_columnHeader_handle:before{
+    position: absolute;
+    top: 15%;
+    right: 0;
+    width: 2px;
+    height: 70%;
+    content: '';
+}
+.vdg_rowHeader_columnHeader:hover .vdg_rowHeader_columnHeader_handle{
+    opacity: 1;
+}
+.vdg_rowHeader_dragActiveElement{
+    position: absolute;
+    display: block;
+    height: auto;
+    transform: rotate(-3deg);
+    z-index: 10;
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 12px;
+    opacity: 0.6;
+}
+
+.vdg_rowHeader_iconSort{
+    /*margin-left: 5px;*/
+
+}
+/* GRID HEADER */
+
+/* GRID SCROLLBAR */
+.vdg_rowHeader_scrollbar{
+    height: 20px;
+    position: sticky;
+    z-index: 10;
+    top : 28px;
+}
+.vdg_rowHeader_scrollbar > .is-horizontal{
+    height: 10px;
+    top: 0;
+}
+.vdg_rowHeader_scrollbar > .is-horizontal > el-scrollbar__thumb{
+    height: 10px;
+    opacity: 1;
+}
+/* GRID SCROLLBAR */
+
+/* GRID CONTENT */
+.vdg_contentWrapper{
+    position: relative;
+}
+.vdg_contentWrapper_rowContent{
+    display: grid;
+    z-index: 1;
+    position: relative;
+    clip-path: inset(0 15px 0 0);
+}
+.vdg_contentWrapper_columnContent{
+    display: grid;
+    max-width: 100%;
+    padding: 5px;
+    position: relative;
+}
+.vdg_contentWrapper_columnContent > *{
+    position: sticky;
+    top: 43px;
+    align-self: start;
+}
+.vdg_contentWrapper_columnContent.icon{
+    justify-content: center;
+}
+.vdg_contentWrapper_columnContent.icon i{
+    cursor: pointer;
+}
+/* GRID CONTENT */
+
+/* CONTEXT MENU */
+.vdg_contextMenuWrapper{
+    overflow: hidden;
+    left: 0px;
+    top: 0px;
+    max-width: 20%;
+    padding: 0px 15px;
+    border-radius: 5px;
+    position: fixed;
+    z-index: 10;
+}
+.vdg_contextMenuWrapper_item{
+    padding: 10px;
+    cursor: pointer;
+    white-space : nowrap;
+}
+.vdg_contextMenuWrapper_item:last-child{
+    border-bottom: 0;
+}
+/* CONTEXT MENU */
+
+/* PAGINATION */
+.vdg_paginationWrapper{
+    display: flex;
+    margin: 15px 0px;
+}
+.vdg_paginationWrapper > .el-pagination{
+    display: flex;
+    margin-left: auto;
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+/* PAGINATION */
+
+/* FILTER */
+.vdg_filter{
+    position: relative;
+    display: flex;
+    flex: 1 1 500px;
+}
+
+.vdg_filter > div:first-child{
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+.vdg_filter > div:first-child input{
+    cursor: pointer;
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.vdg_filter > div:first-child > .el-input__wrapper{
+    padding: 5px 5px 5px 15px;
+}
+
+.vdg_filter > div:first-child> .el-input__wrapper > .el-input__suffix .el-tag {
+    padding: 5px;
+}
+
+.vdg_filter > div:first-child> .el-input__wrapper > .el-input__suffix .el-tag__close {
+    margin-left: 0px;
+}
+
+.vdg_filter > div:first-child> .el-input__wrapper > .el-input__prefix .el-tag {
+    margin-right: 5px;
+}
+
+.vdg_filter_window{
+    overflow: hidden;
+    left: 0;
+    top: 55px;
+    padding: 10px;
+    position: absolute;
+    z-index: 11;
+    box-sizing: border-box;
+    display: flex;
+}
+
+.vdg_filter_window.profile{
+    display: grid;
+    grid-template-columns: 300px 600px;
+    gap: 20px;
+    grid-auto-flow: row;
+}
+
+.vdg_filter_window > div:last-child{
+    width : 600px;
+}
+
+.vdg_filter_window.profile > div:first-child{
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+.vdg_filter_window.profile > div > h3{
+    padding: 0 10px;
+    margin: 5px 0;
+    font-size : 16px;
+}
+
+.vdg_filter_window.profile > div > h3 > i{
+    margin-left: 10px;
+    position: relative;
+    top: 2px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.vdg_filter_window.profile > div > h3 > form{
+    display: inline-flex;
+}
+
+.vdg_filter_window.profile > div > .el-scrollbar{
+    overflow-y: auto;
+    height: 460px;
+    padding-right: 10px;
+}
+
+.vdg_filter_window.profile > div > .el-scrollbar label{
+    display: flex;
+    padding: 0 0 8px 10px;
+    font-weight: bold;
+}
+.vdg_filter_window.profile > div > .el-scrollbar label:first-child{
+    padding-top: 10px;
+}
+
+.vdg_filter_window.profile > div > .el-scrollbar button,
+.vdg_filter_window.profile > div > button{
+    display: flex;
+    margin: 0 0 10px 0;
+    width: 100%;
+}
+
+.vdg_filter_window.profile > div:first-child > .el-scrollbar button:first-child{
+    margin-top: 8px;
+}
+
+.vdg_filter_window.profile > div > button{
+    justify-content: space-between;
+    width: calc(100% - 10px);
+    margin: 0;
+}
+
+.vdg_filter_window.profile > div > .el-scrollbar.active{
+    height: 405px;
+    padding-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.vdg_filter_window.profile > div > .el-form{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    width: calc(100% - 10px);
+    height: 83px;
+}
+
+.vdg_filter_window.profile > div > .el-form .el-form-item{
+    display: grid;
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.vdg_filter_window.profile > div > .el-form button{
+    display: flex;
+    flex: 100%;
+    justify-content: space-between;
+}
+
+.vdg_filter_window.profile > div:last-child > div:last-child{
+    display: flex;
+    justify-content: right;
+}
+
+.vdg_filter_window > div:last-child > div:last-child{
+    padding-top: 15px;
+}
+
+.vdg_filter_window .vdg_filter_number,
+.vdg_filter_window .vdg_filter_date,
+.vdg_filter_window .vdg_filter_list,
+.vdg_filter_window .vdg_filter_searchList{
+    display: flex;
+    padding: 0 0 10px 10px;
+}
+
+.vdg_filter_window .vdg_filter_number > div:nth-child(1),
+.vdg_filter_window .vdg_filter_date > div:nth-child(1){
+    display: flex;
+    flex: 1 1 160px;
+    min-width: 160px;
+    padding-right: 10px;
+}
+.vdg_filter_window .vdg_filter_list > div:nth-child(1),
+.vdg_filter_window .vdg_filter_searchList > div:nth-child(1){
+    display: flex;
+    flex: 1 1 100%;
+    padding-right: 10px;
+}
+.vdg_filter_window .vdg_filter_list > div:nth-child(1) .select-trigger,
+.vdg_filter_window .vdg_filter_searchList > div:nth-child(1) .select-trigger{
+    width: 100%;
+}
+
+.vdg_filter_window .vdg_filter_number > div:nth-child(2),
+.vdg_filter_window .vdg_filter_number > div:nth-child(3),
+.vdg_filter_window .vdg_filter_date > div:nth-child(2),
+.vdg_filter_window .vdg_filter_date > div:nth-child(3){
+    display: flex;
+    flex: 1 1 100%;
+    padding-right: 10px;
+    height: 32px;
+}
+
+.vdg_filter_window .vdg_filter_number > button,
+.vdg_filter_window .vdg_filter_date > button,
+.vdg_filter_window .vdg_filter_list > button,
+.vdg_filter_window .vdg_filter_searchList > button{
+    display: flex;
+    flex: 1 1 32px;
+    min-width: 32px;
+    padding : 10px;
+    margin: 0 !important;
+}
+
+.el-button.last{
+    margin-left: auto;
+}
+
+.vdg_filter_dropMenu.wrap{
+    overflow: hidden;
+    left: 0px;
+    top: 0px;
+    max-width: 20%;
+    padding: 0px 15px;
+    border-radius: 5px;
+    position: fixed;
+    z-index: 15;
+}
+.vdg_filter_dropMenu.wrap > div{
+    padding: 10px;
+    cursor: pointer;
+    white-space : nowrap;
+}
+.vdg_filter_dropMenu.wrap > div:last-child{
+    border-bottom: 0;
+}
+
+/* PROFILE */
